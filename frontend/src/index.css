@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #ff6b2b;
+  --primary-dark: #ea580c;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 m-0 min-h-screen;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply text-gray-700 hover:text-orange-500 px-3 py-2 text-sm font-medium transition-colors;
+  }
+
+  .container-padding {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-spacing {
+    @apply py-16;
+  }
+
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+}
