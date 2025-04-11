@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: hunger-hive-backend
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        value: mongodb+srv://Nakullagad:10072003@cluster0.dazc7.mongodb.net/HungerHive
+      - key: JWT_SECRET
+        value: random#secret
+      - key: IMAGEKIT_PUBLIC_KEY
+        value: public_Sk+so7yluyPCX79LAWnaa6zsIs4=
+      - key: IMAGEKIT_PRIVATE_KEY
+        value: private_RtVFvw93AZW4viuZN1YrkZyLhoE=
+      - key: IMAGEKIT_URL_ENDPOINT
+        value: https://ik.imagekit.io/bxi3adntf
+      - key: CORS_ORIGIN
+        value: https://hunger-hive-frontend.vercel.app

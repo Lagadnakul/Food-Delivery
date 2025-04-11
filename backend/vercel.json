@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server.js"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
+    }
+  ],
+  "env": {
+    "MONGODB_URI": "mongodb+srv://Nakullagad:10072003@cluster0.dazc7.mongodb.net/HungerHive",
+    "NODE_ENV": "production",
+    "JWT_SECRET": "random#secret",
+    "IMAGEKIT_PUBLIC_KEY": "public_Sk+so7yluyPCX79LAWnaa6zsIs4=",
+    "IMAGEKIT_PRIVATE_KEY": "private_RtVFvw93AZW4viuZN1YrkZyLhoE=",
+    "IMAGEKIT_URL_ENDPOINT": "https://ik.imagekit.io/bxi3adntf"
+  }
+}
