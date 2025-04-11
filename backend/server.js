@@ -44,6 +44,20 @@ app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
 });
 
+app.get("/", (req, res) => {
+  res.send(`
+      <html>
+        <head>
+          <title>API Status</title>
+        </head>
+        <body>
+          <h1>API is working</h1>
+          <p>Welcome to the Food delivery website. Everything is running smoothly.</p>
+        </body>
+      </html>
+    `);
+});
+
 // Start server if not imported as a module
 if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   const PORT = process.env.PORT || 4000;
