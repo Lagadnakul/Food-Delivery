@@ -48,9 +48,9 @@ mongoose.connect(process.env.MONGODB_URI)
   });
 
 // API Routes
-app.use('/api/user', userRoutes);
-app.use('/api/food', foodRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/user', userRoutes);
+app.use('/food', foodRoutes);
+app.use('/orders', orderRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {
