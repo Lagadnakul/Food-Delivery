@@ -6,13 +6,20 @@ import userRoutes from './routes/userRoute.js';
 import foodRoutes from './routes/foodRoute.js';
 import orderRoutes from './routes/orderRoute.js';
 
+// Load environment variables early
 dotenv.config();
 
 const app = express();
 
-// CORS configuration
+// CORS configuration - modify for production
 const corsOptions = {
-  origin: '*', // Allow all origins in development
+  origin: process.env.NODE_ENV === 'production' 
+    ? ["https://food-delivery-82wu.onrender.com",
+      "http://localhost:5173",
+      "http://localhost:4000",
+      "http://localhost:5174", 
+    ] 
+    : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
   optionsSuccessStatus: 204
@@ -20,30 +27,31 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' })); // Add size limit
+app.use(express.urlencoded({ extended: true, limit: '50mb' })); // Add size limit
 app.use('/uploads', express.static('uploads'));
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log('MongoDB connection error:', err));
+// Basic security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
 
-// Routes
+// Connect to MongoDB with better error handling
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
+
+// API Routes
 app.use('/api/user', userRoutes);
 app.use('/api/food', foodRoutes);
 app.use('/api/orders', orderRoutes);
 
-// Test route
-app.get('/api', (req, res) => {
-  res.send('API is running...');
-});
-
-// Handle 404
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: "Route not found" });
-});
-
+// Health check endpoint
 app.get("/", (req, res) => {
   res.send(`
       <html>
@@ -52,15 +60,32 @@ app.get("/", (req, res) => {
         </head>
         <body>
           <h1>API is working</h1>
-          <p>Welcome to the Food delivery website. Everything is running smoothly.</p>
+          <p>Welcome to the Hunger Hive API. Server is running properly.</p>
         </body>
       </html>
     `);
 });
 
-// Start server if not imported as a module
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    success: false, 
+    message: 'Something went wrong!', 
+    error: process.env.NODE_ENV === 'production' ? null : err.message
+  });
+});
+
+// Handle 404 routes
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' });
+});
+
+// Start server
+const PORT = process.env.PORT || 4000;
+
+// For Vercel deployment
 if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
-  const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
