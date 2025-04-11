@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { assets, restaurant_list, food_list } from '../assets/assets';
-import { useCart } from '../contexts/CartContext';
-import { CURRENCY } from '../config';
-import axios from 'axios';
-import { API_URL } from '../config';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
+import { assets, restaurant_list } from '../assets/assets';
+
 
 const RestaurantsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
