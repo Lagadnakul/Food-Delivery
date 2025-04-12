@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: './.env.local' });
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://<user>:<password>@<cluster>.mongodb.net/HungerHive';
 
