@@ -13,6 +13,10 @@ export const CartProvider = ({ children }) => {
   const [cartSubtotal, setCartSubtotal] = useState(0);
   const [cartTax, setCartTax] = useState(0);
   const [deliveryFee] = useState(DELIVERY_FEE);
+  // Track login dialog visibility
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  // Track pending item (item user tried to add while not logged in)
+  const [pendingItem, setPendingItem] = useState(null);
 
   // Load cart from localStorage on initial render
   useEffect(() => {
@@ -52,14 +56,37 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem(CART_KEY, JSON.stringify(cartItems));
   }, [cartItems, deliveryFee]);
 
-  // Add to cart with improved comparison - FIX HERE
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    return !!(token && user);
+  };
+
+  // Add to cart with auth check
   const addToCart = (item) => {
+    // Check if user is logged in
+    if (!isAuthenticated()) {
+      // Store the item they tried to add
+      setPendingItem(item);
+      // Show login modal
+      setIsLoginModalOpen(true);
+      // Inform user they need to log in
+      toast.info("Please sign in to add items to your cart", {
+        icon: '🔒',
+        position: 'top-right',
+        autoClose: 3000
+      });
+      return;
+    }
+
+    // User is authenticated, proceed with adding to cart
     setCartItems(prevItems => {
-      // Check if item already exists in cart by ID and category
+      // Check if item already exists in cart by ID
       const existingItemIndex = prevItems.findIndex(
         cartItem => 
-          ((cartItem.id === item.id || cartItem._id === item._id) && 
-          cartItem.category === item.category)
+          (cartItem.id && item.id && cartItem.id === item.id) || 
+          (cartItem._id && item._id && cartItem._id === item._id)
       );
       
       let updatedItems;
@@ -74,7 +101,7 @@ export const CartProvider = ({ children }) => {
         
         toast.success(`Added another ${item.name} to your cart!`, {
           icon: '🛒',
-          position: 'bottom-right',
+          position: 'top-right',
           autoClose: 2000
         });
       } else {
@@ -82,12 +109,12 @@ export const CartProvider = ({ children }) => {
         updatedItems = [...prevItems, { 
           ...item, 
           quantity: 1,
-          cartId: `${item._id || item.id}-${item.category}-${Date.now()}` // Unique ID for cart
+          cartId: `${item._id || item.id}-${Date.now()}` // Unique ID for cart
         }];
         
         toast.success(`${item.name} added to your cart!`, {
           icon: '✅',
-          position: 'bottom-right',
+          position: 'top-right',
           autoClose: 2000
         });
       }
@@ -95,14 +122,38 @@ export const CartProvider = ({ children }) => {
       return updatedItems;
     });
     
-    // Use setTimeout to defer state update to avoid the error
+    // Use setTimeout to defer state update
     setTimeout(() => {
       setIsCartOpen(true);
     }, 0);
   };
 
+  // Function to handle successful login
+  const handleLoginSuccess = () => {
+    // Close the login modal
+    setIsLoginModalOpen(false);
+
+    // If there was a pending item, add it now
+    if (pendingItem) {
+      setTimeout(() => {
+        addToCart(pendingItem);
+        setPendingItem(null);
+      }, 500); // Small delay for better UX
+    }
+  };
+
   // Remove item from cart
   const removeFromCart = (itemId) => {
+    if (!isAuthenticated()) {
+      toast.info("Please sign in to manage your cart", {
+        icon: '🔒',
+        position: 'top-right',
+        autoClose: 3000
+      });
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     setCartItems(prevItems => {
       // Find the item first to show a notification
       const existingItem = prevItems.find(
@@ -112,12 +163,11 @@ export const CartProvider = ({ children }) => {
       if (existingItem) {
         toast.info(`Removed ${existingItem.name} from your cart`, {
           icon: '🗑️',
-          position: 'bottom-right',
+          position: 'top-right',
           autoClose: 2000
         });
       }
       
-      // Update this filter to use the unique cartId when available
       return prevItems.filter(item => 
         !(item.cartId === itemId || item.id === itemId || item._id === itemId)
       );
@@ -126,6 +176,16 @@ export const CartProvider = ({ children }) => {
 
   // Update item quantity with improved handler
   const updateQuantity = (itemId, newQuantity) => {
+    if (!isAuthenticated()) {
+      toast.info("Please sign in to manage your cart", {
+        icon: '🔒',
+        position: 'top-right',
+        autoClose: 3000
+      });
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     if (newQuantity < 1) {
       removeFromCart(itemId);
       return;
@@ -142,10 +202,20 @@ export const CartProvider = ({ children }) => {
 
   // Clear cart
   const clearCart = () => {
+    if (!isAuthenticated()) {
+      toast.info("Please sign in to manage your cart", {
+        icon: '🔒',
+        position: 'top-right',
+        autoClose: 3000
+      });
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     setCartItems([]);
     toast.info('Cart cleared', {
       icon: '🧹',
-      position: 'bottom-right',
+      position: 'top-right',
       autoClose: 2000
     });
     setIsCartOpen(false);
@@ -153,6 +223,16 @@ export const CartProvider = ({ children }) => {
 
   // Toggle cart visibility
   const toggleCart = () => {
+    if (!isAuthenticated() && !isCartOpen) {
+      toast.info("Please sign in to view your cart", {
+        icon: '🔒',
+        position: 'top-right',
+        autoClose: 3000
+      });
+      setIsLoginModalOpen(true);
+      return;
+    }
+
     setIsCartOpen(prev => !prev);
   };
 
@@ -165,12 +245,15 @@ export const CartProvider = ({ children }) => {
       deliveryFee,
       cartTotal,
       isCartOpen,
+      isLoginModalOpen,
+      setIsLoginModalOpen,
       addToCart,
       removeFromCart,
       updateQuantity,
       clearCart,
       toggleCart,
-      setIsCartOpen
+      setIsCartOpen,
+      handleLoginSuccess
     }}>
       {children}
     </CartContext.Provider>
