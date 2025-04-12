@@ -7,7 +7,7 @@ import foodRoutes from './routes/foodRoute.js';
 import orderRoutes from './routes/orderRoute.js';
 
 // Load environment variables early
-dotenv.config();
+dotenv.config({ path: './.env.local' });
 
 const app = express();
 
@@ -19,11 +19,12 @@ const corsOptions = {
       "http://localhost:4000",
       "http://localhost:5174",
       "https://hunger-hive-65wn9eon3-nakul-lagads-projects.vercel.app",
-      "https://improved-zebra-5jp79gp4r6g24g74-4000.app.github.dev",
-      "https://improved-zebra-5jp79gp4r6g24g74-3000.app.github.dev" 
+      "https://super-duper-orbit-gjwvp4w5r6pfvq7x-4000.app.github.dev",
+      "https://super-duper-orbit-gjwvp4w5r6pfvq7x-5173.app.github.dev"
     ] 
     : '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 204
 };
