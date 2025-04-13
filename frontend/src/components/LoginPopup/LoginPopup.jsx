@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
+import { showToast } from '../../utils/toastUtils';
 import { API_URL } from '../../config';
 import './LoginPopup.css';
 
@@ -38,7 +38,11 @@ const LoginPopup = ({ isOpen, onClose, onLoginSuccess }) => {
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('token', response.data.token);
 
-        toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
+        if (isLogin) {
+          showToast.auth.loginSuccess();
+        } else {
+          showToast.auth.registerSuccess();
+        }
         
         // Notify parent component about successful login
         if (onLoginSuccess) {
@@ -48,11 +52,11 @@ const LoginPopup = ({ isOpen, onClose, onLoginSuccess }) => {
         // Close the popup
         onClose();
       } else {
-        toast.error(response.data.message || 'Something went wrong');
+        showToast.error(response.data.message || 'Something went wrong');
       }
     } catch (error) {
       console.error('Auth error:', error);
-      toast.error(error.response?.data?.message || 'Failed to connect to server');
+      showToast.error(error.response?.data?.message || 'Failed to connect to server');
     } finally {
       setLoading(false);
     }

@@ -20,7 +20,7 @@ const corsOptions = {
       "http://localhost:5174",
       "https://hunger-hive-65wn9eon3-nakul-lagads-projects.vercel.app",
       "https://super-duper-orbit-gjwvp4w5r6pfvq7x-4000.app.github.dev",
-      "https://super-duper-orbit-gjwvp4w5r6pfvq7x-5173.app.github.dev"
+      "https://super-duper-orbit-gjwvp4w5r6pfvq7x-3000.app.github.dev"
     ] 
     : '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -270,6 +270,31 @@ app.get("/", (req, res) => {
             <div class="endpoint">
               <div class="endpoint-route">GET /orders/:id</div>
               <div class="endpoint-description">Get details for a specific order</div>
+            </div>
+
+            <div class="endpoint">
+              <div class="endpoint-route">POST /user/addresses</div>
+              <div class="endpoint-description">Add a new address to user profile</div>
+            </div>
+
+            <div class="endpoint">
+              <div class="endpoint-route">PUT /user/addresses/:addressId</div>
+              <div class="endpoint-description">Update an existing address</div>
+            </div>
+
+            <div class="endpoint">
+              <div class="endpoint-route">DELETE /user/addresses/:addressId</div>
+              <div class="endpoint-description">Delete an address from user profile</div>
+            </div>
+
+            <div class="endpoint">
+              <div class="endpoint-route">GET /orders/history</div>
+              <div class="endpoint-description">Get order history for the current user</div>
+            </div>
+
+            <div class="endpoint">
+              <div class="endpoint-route">GET /user/profile</div>
+              <div class="endpoint-description">Get user profile including saved addresses</div>
             </div>
           </section>
           

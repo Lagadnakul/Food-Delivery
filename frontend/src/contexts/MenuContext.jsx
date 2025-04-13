@@ -44,10 +44,6 @@ export const MenuProvider = ({ children }) => {
         setFoodItems(food_list);
         const uniqueCategories = ['All', ...new Set(food_list.map(item => item.category))];
         setCategories(uniqueCategories);
-        
-        if (showLoading) {
-          toast.info("Using sample menu data");
-        }
       }
     } catch (error) {
       console.error('Error fetching food items:', error);
