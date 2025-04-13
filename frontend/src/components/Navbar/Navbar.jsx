@@ -4,6 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { assets } from '../../assets/assets';
 import LoginPopup from '../LoginPopup/LoginPopup';
 import { useCart } from '../../contexts/CartContext';
+import { 
+  User, 
+  ShoppingBag, 
+  MapPin, 
+  Settings,
+  LogOut,
+  ChevronDown,
+  Heart
+} from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -13,6 +22,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const { cartCount, toggleCart } = useCart();
 
   // Check for user on component mount
@@ -36,10 +46,25 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu when route changes
+  // Close mobile menu and dropdown when route changes
   useEffect(() => {
     setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
   }, [location.pathname]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userDropdownOpen && !event.target.closest('.user-dropdown')) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userDropdownOpen]);
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
@@ -62,6 +87,60 @@ const Navbar = () => {
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+    setUserDropdownOpen(false);
+  };
+
+  const renderUserDropdown = () => {
+    if (user) {
+      return (
+        <div className="relative group">
+          <button className="flex items-center space-x-1 focus:outline-none">
+            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 font-medium">
+              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <ChevronDown size={16} className="text-gray-400 group-hover:text-orange-500 transition-colors" />
+          </button>
+          
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right">
+            <div className="px-4 py-2 border-b border-gray-100">
+              <p className="font-medium text-gray-800">{user.name}</p>
+              <p className="text-sm text-gray-500 truncate">{user.email}</p>
+            </div>
+            
+            <Link to="/dashboard/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500">
+              Profile
+            </Link>
+            
+            <Link to="/dashboard/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500">
+              My Orders
+            </Link>
+            
+            <Link to="/dashboard/addresses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-500">
+              My Addresses
+            </Link>
+            
+            <div className="border-t border-gray-100 my-1"></div>
+            
+            <button 
+              onClick={handleLogout}
+              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <button
+        onClick={() => setIsLoginModalOpen(true)}
+        className="flex items-center text-gray-700 hover:text-orange-500 transition-colors"
+      >
+        <User size={20} />
+        <span className="ml-1 font-medium hidden md:inline">Sign In</span>
+      </button>
+    );
   };
 
   const navLinks = [
@@ -161,42 +240,7 @@ const Navbar = () => {
             </div>
 
             {/* User Authentication */}
-            {user ? (
-              <div className="hidden md:flex items-center space-x-3">
-                <motion.div 
-                  className="flex items-center space-x-2 rounded-full bg-gray-100 px-3 py-1.5"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">{user.name.split(' ')[0]}</span>
-                  <motion.button 
-                    onClick={handleLogout}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="text-gray-400 hover:text-orange-500 ml-1"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                  </motion.button>
-                </motion.div>
-              </div>
-            ) : (
-              <motion.button
-                onClick={() => setIsLoginModalOpen(true)}
-                className="hidden md:block px-4 py-1.5 text-sm bg-gradient-to-r from-orange-500 to-orange-600 
-                          text-white rounded-full shadow-sm hover:shadow-md transition-all"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                Sign In
-              </motion.button>
-            )}
+            {renderUserDropdown()}
             
             {/* Cart Button */}
             <motion.button 
@@ -285,19 +329,43 @@ const Navbar = () => {
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ duration: 0.3, delay: navLinks.length * 0.05 }}
                   >
-                    <div className="flex items-center justify-between px-4 py-2 mt-2 border-t border-gray-100">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold mr-3">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-sm font-medium text-gray-700">{user.name}</span>
+                    <div className="flex items-center px-4 py-2 mt-2 border-t border-gray-100">
+                      <div className="flex flex-col w-full gap-2">
+                        <Link
+                          to="/dashboard/profile"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-500 rounded-lg"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <User size={16} className="mr-2" />
+                          My Profile
+                        </Link>
+                        <Link
+                          to="/dashboard/orders"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-500 rounded-lg"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <ShoppingBag size={16} className="mr-2" />
+                          My Orders
+                        </Link>
+                        <Link
+                          to="/dashboard/addresses"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-500 rounded-lg"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <MapPin size={16} className="mr-2" />
+                          My Addresses
+                        </Link>
+                        <button 
+                          onClick={() => {
+                            handleLogout();
+                            setMobileMenuOpen(false);
+                          }}
+                          className="flex items-center px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+                        >
+                          <LogOut size={16} className="mr-2" />
+                          Logout
+                        </button>
                       </div>
-                      <button 
-                        onClick={handleLogout}
-                        className="text-sm text-orange-500 hover:text-orange-600 font-medium px-3 py-1 rounded-md hover:bg-orange-50"
-                      >
-                        Logout
-                      </button>
                     </div>
                   </motion.div>
                 ) : (

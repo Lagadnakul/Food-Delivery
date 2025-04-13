@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { showToast } from '../utils/toastUtils';
 import { CART_KEY, DELIVERY_FEE, TAX_RATE } from '../config';
 
 // Create the context
@@ -65,22 +65,13 @@ export const CartProvider = ({ children }) => {
 
   // Add to cart with auth check
   const addToCart = (item) => {
-    // Check if user is logged in
     if (!isAuthenticated()) {
-      // Store the item they tried to add
+      showToast.auth.needLogin();
       setPendingItem(item);
-      // Show login modal
       setIsLoginModalOpen(true);
-      // Inform user they need to log in
-      toast.info("Please sign in to add items to your cart", {
-        icon: '🔒',
-        position: 'top-right',
-        autoClose: 3000
-      });
       return;
     }
-
-    // User is authenticated, proceed with adding to cart
+    
     setCartItems(prevItems => {
       // Check if item already exists in cart by ID
       const existingItemIndex = prevItems.findIndex(
@@ -99,11 +90,6 @@ export const CartProvider = ({ children }) => {
           quantity: updatedItems[existingItemIndex].quantity + 1
         };
         
-        toast.success(`Added another ${item.name} to your cart!`, {
-          icon: '🛒',
-          position: 'top-right',
-          autoClose: 2000
-        });
       } else {
         // Item doesn't exist, add new item
         updatedItems = [...prevItems, { 
@@ -112,11 +98,6 @@ export const CartProvider = ({ children }) => {
           cartId: `${item._id || item.id}-${Date.now()}` // Unique ID for cart
         }];
         
-        toast.success(`${item.name} added to your cart!`, {
-          icon: '✅',
-          position: 'top-right',
-          autoClose: 2000
-        });
       }
       
       return updatedItems;
@@ -203,20 +184,14 @@ export const CartProvider = ({ children }) => {
   // Clear cart
   const clearCart = () => {
     if (!isAuthenticated()) {
-      toast.info("Please sign in to manage your cart", {
-        icon: '🔒',
-        position: 'top-right',
-        autoClose: 3000
-      });
+      showToast.auth.needLogin();
       setIsLoginModalOpen(true);
       return;
     }
 
     setCartItems([]);
-    toast.info('Cart cleared', {
-      icon: '🧹',
-      position: 'top-right',
-      autoClose: 2000
+    showToast.info('Cart cleared', {
+      icon: '🧹'
     });
     setIsCartOpen(false);
   };
@@ -224,11 +199,7 @@ export const CartProvider = ({ children }) => {
   // Toggle cart visibility
   const toggleCart = () => {
     if (!isAuthenticated() && !isCartOpen) {
-      toast.info("Please sign in to view your cart", {
-        icon: '🔒',
-        position: 'top-right',
-        autoClose: 3000
-      });
+      showToast.auth.needLogin();
       setIsLoginModalOpen(true);
       return;
     }

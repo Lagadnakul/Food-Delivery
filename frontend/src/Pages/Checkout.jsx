@@ -6,13 +6,14 @@ import { CURRENCY } from '../config';
 import { assets } from '../assets/assets';
 import axios from 'axios';
 import { API_URL } from '../config';
-import { toast } from 'react-toastify';
+import { showToast } from '../utils/toastUtils';
 
 const Checkout = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
   const { 
     cartItems, 
     cartSubtotal,
@@ -64,6 +65,32 @@ const Checkout = () => {
     
     setIsSubmitting(true);
     try {
+      const saveAddressCheckbox = document.getElementById('save-address');
+      
+      // If user wants to save address and they aren't using a saved address already
+      if (saveAddressCheckbox && saveAddressCheckbox.checked && !selectedAddressId) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            // Save the address to user profile
+            await axios.post(
+              `${API_URL}/user/addresses`, 
+              {
+                name: deliveryDetails.name,
+                phone: deliveryDetails.phone,
+                address: deliveryDetails.address,
+                label: 'home', // Default label
+                isDefault: false // Not default by default
+              },
+              { headers: { 'Authorization': `Bearer ${token}` } }
+            );
+          } catch (err) {
+            console.error("Error saving address:", err);
+            // Continue with order even if saving address fails
+          }
+        }
+      }
+      
       // Format the order data for the API
       const orderData = {
         customer: {
@@ -101,18 +128,16 @@ const Checkout = () => {
         navigate(`/order-confirmation/${orderId}`, { 
           state: { orderDetails: response.data.data || response.data } 
         });
-        toast.success('Your order has been placed successfully!', {
-          icon: '🎉'
-        });
+        showToast.order.placed();
       } else {
-        toast.error('Order created but could not redirect to confirmation page.');
+        showToast.error('Order created but could not redirect to confirmation page.');
       }
     } catch (error) {
       console.error('Error placing order:', error);
       if (error.response) {
-        toast.error(`Order failed: ${error.response.data.message || 'Please check your details and try again.'}`);
+        showToast.order.failed(error.response.data.message || 'Please check your details and try again.');
       } else {
-        toast.error('Connection error. Please check your internet and try again.');
+        showToast.error('Connection error. Please check your internet and try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -399,6 +424,18 @@ const Checkout = () => {
                   placeholder="Any special instructions for delivery"
                 ></textarea>
               </div>
+            </div>
+          
+            {/* Save Address Option */}
+            <div className="flex items-center mt-2">
+              <input
+                id="save-address"
+                type="checkbox"
+                className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300 rounded"
+              />
+              <label htmlFor="save-address" className="ml-2 text-sm text-gray-700">
+                Save this address for future orders
+              </label>
             </div>
           
             <div className="pt-6 border-t border-gray-100 mt-5">
