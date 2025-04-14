@@ -1,7 +1,7 @@
 import ImageKit from 'imagekit';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: './.env.local' });
 
 // Initialize ImageKit with your credentials
 const imagekit = new ImageKit({
