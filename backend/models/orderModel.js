@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'user',
+    required: true
+  },
   customer: {
     name: { type: String, required: true },
     phone: { type: String, required: true },
@@ -8,7 +13,7 @@ const orderSchema = new mongoose.Schema({
     instructions: { type: String }
   },
   items: [{
-    productId: { type: String, required: true }, // Changed to String to accept numeric IDs
+    productId: { type: String, required: true },
     name: { type: String, required: true },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true },
@@ -25,4 +30,4 @@ const orderSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-export const Order = mongoose.model('Order', orderSchema);
+export const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
