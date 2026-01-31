@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { food_list } from '../assets/assets';
 import { API_URL } from '../config';
+import { useCart } from './CartContext';
 
 // Define the constant locally if it's not exported from config.js
 const DEFAULT_FETCH_INTERVAL = 60000; // 60 seconds
@@ -15,6 +16,8 @@ export const MenuProvider = ({ children }) => {
   const [categories, setCategories] = useState(['All']);
   const [loading, setLoading] = useState(true);
   const [lastFetched, setLastFetched] = useState(0);
+  // We'll reference useCart in the component that uses addToCart
+  // This avoids circular dependency issues
 
   // Function to fetch food items from the API
   const fetchFoodItems = useCallback(async (showLoading = true) => {
@@ -41,10 +44,6 @@ export const MenuProvider = ({ children }) => {
         setFoodItems(food_list);
         const uniqueCategories = ['All', ...new Set(food_list.map(item => item.category))];
         setCategories(uniqueCategories);
-        
-        if (showLoading) {
-          toast.info("Using sample menu data");
-        }
       }
     } catch (error) {
       console.error('Error fetching food items:', error);
@@ -73,6 +72,13 @@ export const MenuProvider = ({ children }) => {
     return () => clearInterval(intervalId);
   }, [fetchFoodItems]);
 
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    return !!(token && user);
+  };
+
   // Provide the menu data and functions to children
   return (
     <MenuContext.Provider value={{ 
@@ -80,6 +86,7 @@ export const MenuProvider = ({ children }) => {
       categories, 
       loading, 
       lastFetched,
+      isAuthenticated,
       refreshMenu: () => fetchFoodItems(true)
     }}>
       {children}

@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import Navbar from './components/Navbar/Navbar'
 import Sidebar from './components/Sidebar/Sidebar'
 import Add from './pages/Add/Add.jsx'
@@ -36,6 +38,19 @@ const App = () => {
           </Routes>
         </main>
       </div>
+      
+      {/* Global Toast Container */}
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   )
 }

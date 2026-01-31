@@ -16,4 +16,4 @@ export const assets ={
     HH_logo
 }
 
-export const url = 'http://localhost:4000/api';
+export const url = import.meta.env.VITE_API_URL

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { assets } from '../../assets/assets'
+import { Link } from 'react-router-dom'
 
 const Navbar = ({ toggleSidebar }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
@@ -18,13 +19,13 @@ const Navbar = ({ toggleSidebar }) => {
             </svg>
           </button>
           
-          <div className="flex items-center gap-3">
+          <Link to="/dashboard" className="flex items-center gap-3">
             <img src={assets.HH_logo} className="h-10 w-auto" alt="Hunger Hive" />
             <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-slate-800">Hunger Hive</h1>
               <p className="text-xs text-slate-500">Admin Dashboard</p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Right Section - Actions */}

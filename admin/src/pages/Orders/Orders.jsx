@@ -20,7 +20,7 @@ const Orders = () => {
   const fetchOrders = async () => {
     setLoading(true)
     try {
-      const response = await axios.get(`${url}/order/list`)
+      const response = await axios.get(`${url}/api/order/list`)
       if (response.data.success) {
         setOrders(response.data.data.reverse())
       } else {
@@ -36,7 +36,7 @@ const Orders = () => {
 
   const updateStatus = async (orderId, newStatus) => {
     try {
-      const response = await axios.post(`${url}/order/status`, {
+      const response = await axios.post(`${url}/api/order/status`, {
         orderId,
         status: newStatus
       })
