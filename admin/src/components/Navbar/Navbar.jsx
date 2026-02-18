@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { assets } from '../../assets/assets'
 import { Link } from 'react-router-dom'
+import { assets } from '../../assets/assets'
 
 const Navbar = ({ toggleSidebar }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false)

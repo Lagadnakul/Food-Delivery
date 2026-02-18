@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import { CURRENCY } from '../config';
+import { CURRENCY, RAZORPAY_KEY_ID, ENABLE_ONLINE_PAYMENT } from '../config';
 import { assets } from '../assets/assets';
-import axios from 'axios';
-import { API_URL } from '../config';
+import api from '../services/api';
+import PaymentService from '../services/paymentService';
 import { showToast } from '../utils/toastUtils';
 
 const Checkout = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState(ENABLE_ONLINE_PAYMENT ? 'razorpay' : 'cod');
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const { 
     cartItems, 
@@ -60,6 +60,59 @@ const Checkout = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Handle Razorpay payment
+  const handleRazorpayPayment = async (orderId, orderData) => {
+    try {
+      // Create Razorpay order
+      const paymentOrderResult = await PaymentService.createOrder({
+        amount: cartTotal,
+        currency: 'INR',
+        receipt: `order_${orderId}`,
+        notes: {
+          orderId: orderId,
+          customerName: deliveryDetails.name,
+        },
+      });
+
+      if (!paymentOrderResult.success) {
+        throw new Error(paymentOrderResult.message || 'Failed to create payment order');
+      }
+
+      // Open Razorpay checkout
+      await PaymentService.openCheckout(
+        {
+          razorpayOrderId: paymentOrderResult.order.id,
+          amount: paymentOrderResult.order.amount,
+          currency: paymentOrderResult.order.currency,
+          orderId: orderId,
+          customerName: deliveryDetails.name,
+          customerEmail: '', // Add email if available
+          customerPhone: deliveryDetails.phone,
+        },
+        // Success callback
+        (result) => {
+          clearCart();
+          navigate(`/order-confirmation/${orderId}`, {
+            state: { orderDetails: orderData, paymentSuccess: true },
+          });
+          showToast.success('Payment successful! Order confirmed.');
+        },
+        // Failure callback
+        (error) => {
+          showToast.error(error.message || 'Payment failed. Please try again.');
+          // Order is already created, user can retry payment
+          navigate(`/order-confirmation/${orderId}`, {
+            state: { orderDetails: orderData, paymentFailed: true },
+          });
+        }
+      );
+    } catch (error) {
+      console.error('Payment error:', error);
+      showToast.error('Payment initialization failed');
+      throw error;
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (isSubmitting) return;
     
@@ -73,17 +126,13 @@ const Checkout = () => {
         if (token) {
           try {
             // Save the address to user profile
-            await axios.post(
-              `${API_URL}/user/addresses`, 
-              {
-                name: deliveryDetails.name,
-                phone: deliveryDetails.phone,
-                address: deliveryDetails.address,
-                label: 'home', // Default label
-                isDefault: false // Not default by default
-              },
-              { headers: { 'Authorization': `Bearer ${token}` } }
-            );
+            await api.post('/user/addresses', {
+              name: deliveryDetails.name,
+              phone: deliveryDetails.phone,
+              address: deliveryDetails.address,
+              label: 'home',
+              isDefault: false
+            });
           } catch (err) {
             console.error("Error saving address:", err);
             // Continue with order even if saving address fails
@@ -107,37 +156,43 @@ const Checkout = () => {
           image: item.image.replace(/^\/src\/assets\//, '')
         })),
         payment: {
-          method: paymentMethod,
+          method: paymentMethod === 'razorpay' ? 'online' : paymentMethod,
           subtotal: Number(parseFloat(cartSubtotal).toFixed(2)),
           tax: Number(parseFloat(cartTax).toFixed(2)),
           deliveryFee: Number(parseFloat(deliveryFee).toFixed(2)),
-          total: Number(parseFloat(cartTotal).toFixed(2))
+          total: Number(parseFloat(cartTotal).toFixed(2)),
+          status: paymentMethod === 'cod' ? 'pending' : 'pending'
         },
         status: 'pending'
       };
       
       // Make API call to create order
-      const response = await axios.post(`${API_URL}/orders`, orderData);
+      const response = await api.post('/orders', orderData);
       
-      // Clear the cart after successful order
-      clearCart();
-      
-      // Navigate to the order confirmation page
       const orderId = response.data._id || (response.data.data && response.data.data._id);
-      if (orderId) {
+      
+      if (!orderId) {
+        throw new Error('Order created but no ID returned');
+      }
+
+      // Handle payment based on method
+      if (paymentMethod === 'razorpay' && ENABLE_ONLINE_PAYMENT) {
+        // Process Razorpay payment
+        await handleRazorpayPayment(orderId, response.data.data || response.data);
+      } else {
+        // Cash on delivery - redirect directly
+        clearCart();
         navigate(`/order-confirmation/${orderId}`, { 
           state: { orderDetails: response.data.data || response.data } 
         });
         showToast.order.placed();
-      } else {
-        showToast.error('Order created but could not redirect to confirmation page.');
       }
     } catch (error) {
       console.error('Error placing order:', error);
       if (error.response) {
         showToast.order.failed(error.response.data.message || 'Please check your details and try again.');
       } else {
-        showToast.error('Connection error. Please check your internet and try again.');
+        showToast.error(error.message || 'Connection error. Please check your internet and try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -490,87 +545,62 @@ const Checkout = () => {
 
       <div className="p-6">
         <div className="space-y-4">
-          <motion.div 
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className={`border-2 rounded-xl p-5 cursor-pointer transition-all ${
-              paymentMethod === 'card' 
-                ? 'border-orange-500 bg-orange-50' 
-                : 'border-gray-200 hover:border-orange-300'
-            }`}
-            onClick={() => setPaymentMethod('card')}
-          >
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="card"
-                name="payment"
-                value="card"
-                checked={paymentMethod === 'card'}
-                onChange={() => setPaymentMethod('card')}
-                className="h-5 w-5 text-orange-500 focus:ring-orange-500"
-              />
-              <label htmlFor="card" className="ml-3 flex items-center justify-between cursor-pointer w-full">
-                <div>
-                  <span className="font-medium text-gray-800 block mb-1">Credit/Debit Card</span>
-                  <p className="text-sm text-gray-500">Pay securely with your card</p>
-                </div>
-                <div className="flex space-x-2">
-                  <div className="h-8 w-11 rounded shadow-sm overflow-hidden border border-gray-200">
-                    <svg viewBox="0 0 48 48" className="h-full w-full">
-                      <rect x="4" y="8" width="40" height="32" rx="4" fill="#1A1F71" />
-                      <path d="M19 30L22 18H26L23 30H19Z" fill="#FFFFFF" />
-                      <path d="M33 18L29.5 25.5L29 24L27 18H23L28 30H32L39 18H33Z" fill="#FFFFFF" />
-                    </svg>
+          {/* Razorpay Payment Option */}
+          {ENABLE_ONLINE_PAYMENT && (
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className={`border-2 rounded-xl p-5 cursor-pointer transition-all ${
+                paymentMethod === 'razorpay' 
+                  ? 'border-orange-500 bg-orange-50' 
+                  : 'border-gray-200 hover:border-orange-300'
+              }`}
+              onClick={() => setPaymentMethod('razorpay')}
+            >
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="razorpay"
+                  name="payment"
+                  value="razorpay"
+                  checked={paymentMethod === 'razorpay'}
+                  onChange={() => setPaymentMethod('razorpay')}
+                  className="h-5 w-5 text-orange-500 focus:ring-orange-500"
+                />
+                <label htmlFor="razorpay" className="ml-3 flex items-center justify-between cursor-pointer w-full">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-800 block">Pay Online</span>
+                      <span className="px-2 py-0.5 bg-green-100 text-green-600 text-xs rounded-full font-medium">Recommended</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">Credit/Debit Card, UPI, Net Banking, Wallets</p>
                   </div>
-                  <div className="h-8 w-11 rounded shadow-sm overflow-hidden border border-gray-200">
-                    <svg viewBox="0 0 48 48" className="h-full w-full">
-                      <rect x="4" y="8" width="40" height="32" rx="4" fill="#EB001B" />
-                      <circle cx="24" cy="24" r="8" fill="#FFFFFF" />
-                      <circle cx="24" cy="24" r="8" fill="#F79E1B" fillOpacity="0.8" />
-                    </svg>
+                  <div className="flex items-center space-x-2">
+                    {/* Visa */}
+                    <div className="h-8 w-11 rounded shadow-sm overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
+                      <svg viewBox="0 0 48 32" className="h-5 w-8">
+                        <rect width="48" height="32" fill="#1A1F71"/>
+                        <text x="24" y="20" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">VISA</text>
+                      </svg>
+                    </div>
+                    {/* Mastercard */}
+                    <div className="h-8 w-11 rounded shadow-sm overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
+                      <svg viewBox="0 0 48 32" className="h-5 w-8">
+                        <circle cx="18" cy="16" r="10" fill="#EB001B"/>
+                        <circle cx="30" cy="16" r="10" fill="#F79E1B"/>
+                      </svg>
+                    </div>
+                    {/* UPI */}
+                    <div className="h-8 w-11 rounded shadow-sm overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
+                      <span className="text-xs font-bold text-green-600">UPI</span>
+                    </div>
                   </div>
-                </div>
-              </label>
-            </div>
-          </motion.div>
+                </label>
+              </div>
+            </motion.div>
+          )}
           
-          <motion.div 
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className={`border-2 rounded-xl p-5 cursor-pointer transition-all ${
-              paymentMethod === 'paypal' 
-                ? 'border-orange-500 bg-orange-50' 
-                : 'border-gray-200 hover:border-orange-300'
-            }`}
-            onClick={() => setPaymentMethod('paypal')}
-          >
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="paypal"
-                name="payment"
-                value="paypal"
-                checked={paymentMethod === 'paypal'}
-                onChange={() => setPaymentMethod('paypal')}
-                className="h-5 w-5 text-orange-500 focus:ring-orange-500"
-              />
-              <label htmlFor="paypal" className="ml-3 flex items-center justify-between cursor-pointer w-full">
-                <div>
-                  <span className="font-medium text-gray-800 block mb-1">PayPal</span>
-                  <p className="text-sm text-gray-500">Fast and secure payment with PayPal</p>
-                </div>
-                <div className="h-8 w-11 rounded shadow-sm overflow-hidden border border-gray-200">
-                  <svg viewBox="0 0 48 48" className="h-full w-full">
-                    <rect x="4" y="8" width="40" height="32" rx="4" fill="#003087" />
-                    <path d="M16 18C16 16.8954 16.8954 16 18 16H21C23.2091 16 25 17.7909 25 20C25 22.2091 23.2091 24 21 24H18C16.8954 24 16 23.1046 16 22V18Z" fill="#FFFFFF" />
-                    <path d="M25 20C25 22.2091 23.2091 24 21 24H20L19 28H16L18 18H21C23.2091 18 25 19.7909 25 20Z" fill="#FFFFFF" fillOpacity="0.5" />
-                  </svg>
-                </div>
-              </label>
-            </div>
-          </motion.div>
-          
+          {/* Cash on Delivery Option */}
           <motion.div 
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}

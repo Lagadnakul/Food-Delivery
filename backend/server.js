@@ -2,45 +2,74 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
 import userRoutes from './routes/userRoute.js';
 import foodRoutes from './routes/foodRoute.js';
 import orderRoutes from './routes/orderRoute.js';
+import paymentRoutes from './routes/paymentRoute.js';
+import locationRoutes from './routes/locationRoute.js';
 
 // Load environment variables early
 dotenv.config({ path: './.env.local' });
 
 const app = express();
 
-// CORS configuration - modify for production
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL,
+].filter(Boolean);
+
+// CORS configuration - production-ready
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ["https://food-delivery-82wu.onrender.com",
-      "http://localhost:5173",
-      "http://localhost:4000",
-      "http://localhost:5174",
-      "https://hunger-hive-65wn9eon3-nakul-lagads-projects.vercel.app",
-      "https://super-duper-orbit-gjwvp4w5r6pfvq7x-4000.app.github.dev",
-      "https://super-duper-orbit-gjwvp4w5r6pfvq7x-3000.app.github.dev"
-    ] 
-    : '*',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (process.env.NODE_ENV === 'production') {
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    } else {
+      // In development, allow all origins
+      callback(null, true);
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 200,
+  maxAge: 86400, // Cache preflight for 24 hours
 };
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '50mb' })); // Add size limit
-app.use(express.urlencoded({ extended: true, limit: '50mb' })); // Add size limit
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static('uploads'));
 
-// Basic security headers
+// Security headers
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   next();
 });
+
+// Request logging in development
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+  });
+}
 
 // Connect to MongoDB with better error handling
 mongoose.connect(process.env.MONGODB_URI)
@@ -54,6 +83,8 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/user', userRoutes);
 app.use('/food', foodRoutes);
 app.use('/orders', orderRoutes);
+app.use('/payment', paymentRoutes);
+app.use('/location', locationRoutes);
 
 // Health check endpoint
 // Health check endpoint
