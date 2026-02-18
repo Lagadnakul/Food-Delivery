@@ -345,6 +345,103 @@ const setDefaultAddress = async (req, res) => {
     }
 };
 
+// Logout user (clear HTTP-only cookie if used)
+const logoutUser = async (req, res) => {
+    try {
+        // Clear the HTTP-only cookie if using cookie-based auth
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+        
+        res.json({
+            success: true,
+            message: "Logged out successfully"
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Something went wrong" });
+    }
+};
+
+// Verify token validity
+const verifyToken = async (req, res) => {
+    try {
+        // If we reach here, the token is valid (authMiddleware passed)
+        const user = await userModel.findById(req.user._id).select('-password');
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        res.json({
+            success: true,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                addresses: user.addresses || []
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Token verification failed" });
+    }
+};
+
+// Change password
+const changePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    
+    try {
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Current password and new password are required" 
+            });
+        }
+        
+        if (newPassword.length < 8) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "New password should be at least 8 characters" 
+            });
+        }
+        
+        const user = await userModel.findById(req.user._id);
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Current password is incorrect" 
+            });
+        }
+        
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        
+        user.password = hashedPassword;
+        await user.save();
+        
+        res.json({
+            success: true,
+            message: "Password changed successfully"
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Something went wrong" });
+    }
+};
+
 export { 
     loginUser, 
     registerUser, 
@@ -353,5 +450,8 @@ export {
     addAddress,
     updateAddress,
     deleteAddress,
-    setDefaultAddress
+    setDefaultAddress,
+    logoutUser,
+    verifyToken,
+    changePassword
 };

@@ -167,8 +167,152 @@ const getOrderById = async (req, res) => {
   }
 };
 
+// Track order - get current status and estimated delivery time
+const trackOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).select('status statusHistory estimatedDeliveryTime customer.location createdAt');
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+    
+    // Calculate remaining time
+    let remainingTime = null;
+    if (order.estimatedDeliveryTime && !['delivered', 'cancelled'].includes(order.status)) {
+      const orderTime = new Date(order.createdAt).getTime();
+      const estimatedDelivery = orderTime + (order.estimatedDeliveryTime * 60 * 1000);
+      remainingTime = Math.max(0, Math.ceil((estimatedDelivery - Date.now()) / 60000));
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        status: order.status,
+        statusHistory: order.statusHistory,
+        estimatedDeliveryTime: order.estimatedDeliveryTime,
+        remainingTime,
+        location: order.customer?.location
+      }
+    });
+  } catch (error) {
+    console.error("Error tracking order:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to track order"
+    });
+  }
+};
+
+// Cancel order
+const cancelOrder = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const order = await Order.findById(req.params.id);
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+    
+    // Check ownership
+    if (order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized"
+      });
+    }
+    
+    // Check if order can be cancelled
+    const nonCancellableStatuses = ['out_for_delivery', 'delivered', 'cancelled'];
+    if (nonCancellableStatuses.includes(order.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel order with status: ${order.status}`
+      });
+    }
+    
+    // Update order
+    order.status = 'cancelled';
+    order.cancelledAt = new Date();
+    order.cancellationReason = reason || 'Cancelled by user';
+    
+    await order.save();
+    
+    res.json({
+      success: true,
+      message: "Order cancelled successfully",
+      data: order
+    });
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel order"
+    });
+  }
+};
+
+// Update order status (Admin)
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { status, note } = req.body;
+    const validStatuses = ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'];
+    
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status"
+      });
+    }
+    
+    const order = await Order.findById(req.params.id);
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
+      });
+    }
+    
+    order.status = status;
+    
+    if (status === 'delivered') {
+      order.deliveredAt = new Date();
+    }
+    
+    // Add to status history with optional note
+    order.statusHistory.push({
+      status,
+      timestamp: new Date(),
+      note: note || ''
+    });
+    
+    await order.save();
+    
+    res.json({
+      success: true,
+      message: "Order status updated",
+      data: order
+    });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order status"
+    });
+  }
+};
+
 export {
   createOrder,
   getUserOrderHistory,
-  getOrderById
+  getOrderById,
+  trackOrder,
+  cancelOrder,
+  updateOrderStatus
 };

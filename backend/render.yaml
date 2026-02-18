@@ -4,18 +4,35 @@ services:
     runtime: node
     buildCommand: npm install
     startCommand: node server.js
+    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        value: mongodb+srv://Nakullagad:10072003@cluster0.dazc7.mongodb.net/HungerHive
+        sync: false # Set this in Render dashboard for security
       - key: JWT_SECRET
-        value: random#secret
-      - key: IMAGEKIT_PUBLIC_KEY
-        value: public_Sk+so7yluyPCX79LAWnaa6zsIs4=
-      - key: IMAGEKIT_PRIVATE_KEY
-        value: private_RtVFvw93AZW4viuZN1YrkZyLhoE=
-      - key: IMAGEKIT_URL_ENDPOINT
-        value: https://ik.imagekit.io/bxi3adntf
-      - key: CORS_ORIGIN
+        sync: false # Set this in Render dashboard for security
+      - key: COOKIE_SECRET
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: FRONTEND_URL
         value: https://hunger-hive-frontend.vercel.app
+      - key: ADMIN_URL
+        value: https://hunger-hive-admin.vercel.app
+      - key: IMAGEKIT_PUBLIC_KEY
+        sync: false
+      - key: IMAGEKIT_PRIVATE_KEY
+        sync: false
+      - key: IMAGEKIT_URL_ENDPOINT
+        sync: false
+      - key: RESTAURANT_LAT
+        value: "19.0760"
+      - key: RESTAURANT_LNG
+        value: "72.8777"
