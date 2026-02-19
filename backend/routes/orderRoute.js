@@ -1,12 +1,5 @@
 import express from 'express';
-import { 
-  createOrder, 
-  getUserOrderHistory, 
-  getOrderById, 
-  trackOrder, 
-  cancelOrder, 
-  updateOrderStatus 
-} from '../controllers/orderController.js';
+import { createOrder, getUserOrderHistory, getOrderById } from '../controllers/orderController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { Order } from '../models/orderModel.js';
 
@@ -18,41 +11,16 @@ router.post('/', authMiddleware, createOrder);
 // Get user order history - protected route
 router.get('/history', authMiddleware, getUserOrderHistory);
 
-// Track order - protected route
-router.get('/:id/track', authMiddleware, trackOrder);
-
-// Cancel order - protected route
-router.post('/:id/cancel', authMiddleware, cancelOrder);
-
 // Get order by ID - protected route
 router.get('/:id', authMiddleware, getOrderById);
 
-// Admin Routes
 // Get all orders (for admin panel)
 router.get('/', async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const status = req.query.status;
-    
-    const query = status ? { status } : {};
-    
-    const orders = await Order.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate('user', 'name email');
-      
-    const total = await Order.countDocuments(query);
-    
+    const orders = await Order.find().sort({ createdAt: -1 });
     res.json({
       success: true,
-      data: orders,
-      pagination: {
-        page,
-        totalPages: Math.ceil(total / limit),
-        total
-      }
+      data: orders
     });
   } catch (error) {
     res.status(500).json({ 
@@ -63,6 +31,30 @@ router.get('/', async (req, res) => {
 });
 
 // Update order status (for admin)
-router.patch('/:id/status', updateOrderStatus);
+router.patch('/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    
+    if (!updatedOrder) return res.status(404).json({ 
+      success: false, 
+      message: 'Order not found' 
+    });
+    
+    res.json({
+      success: true,
+      data: updatedOrder
+    });
+  } catch (error) {
+    res.status(400).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+});
 
 export default router;

@@ -7,10 +7,7 @@ import {
   addAddress, 
   updateAddress, 
   deleteAddress, 
-  setDefaultAddress,
-  logoutUser,
-  verifyToken,
-  changePassword
+  setDefaultAddress 
 } from '../controllers/userController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
@@ -21,11 +18,8 @@ router.post('/login', loginUser);
 router.post('/register', registerUser);
 
 // Protected routes
-router.post('/logout', authMiddleware, logoutUser);
-router.get('/verify', authMiddleware, verifyToken);
 router.get('/profile', authMiddleware, getUserProfile);
 router.put('/profile', authMiddleware, updateUserProfile);
-router.put('/change-password', authMiddleware, changePassword);
 
 // Address routes
 router.post('/addresses', authMiddleware, addAddress);

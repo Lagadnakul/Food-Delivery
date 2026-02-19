@@ -1,248 +1,277 @@
-import React, { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import LocationService from '../../services/locationService';
-import LoadingSpinner from '../UI/LoadingSpinner';
-import Button from '../UI/Button';
+/**
+ * LocationPicker Component
+ * 
+ * An interactive map component for selecting delivery location
+ * by clicking on the map or using current location
+ */
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import { MapPin, Navigation, Loader2, Search, X, Check } from 'lucide-react';
+import 'leaflet/dist/leaflet.css';
 
-const LocationPicker = ({ onLocationSelect, onClose }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [address, setAddress] = useState('');
-  const [deliveryCheck, setDeliveryCheck] = useState(null);
+import { createCustomIcon } from '../../utils/fixLeafletIcon';
+import { useLocation } from '../../hooks/useLocation';
 
-  // Get current location
-  const handleGetCurrentLocation = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+const DEFAULT_CENTER = { lat: 20.5937, lng: 78.9629 };
+const DEFAULT_ZOOM = 13;
 
-      const location = await LocationService.getCurrentLocation();
-      
-      // Get address from coordinates
-      const addressResult = await LocationService.getAddressFromCoordinates(
-        location.lat,
-        location.lng
-      );
+/**
+ * Component to handle map click events
+ */
+const MapClickHandler = ({ onLocationSelect }) => {
+  useMapEvents({
+    click: (e) => {
+      const { lat, lng } = e.latlng;
+      onLocationSelect({ lat, lng });
+    },
+  });
+  return null;
+};
 
-      // Check delivery availability
-      const deliveryResult = await LocationService.isDeliveryAvailable(
-        location.lat,
-        location.lng
-      );
+/**
+ * Component to animate to location
+ */
+const FlyToLocation = ({ position, zoom = 16 }) => {
+  const map = useMap();
 
-      setSelectedLocation(location);
-      setAddress(addressResult.success ? addressResult.address : 'Location detected');
-      setDeliveryCheck(deliveryResult);
-    } catch (err) {
-      setError(err.message || 'Failed to get location');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (position) {
+      map.flyTo([position.lat, position.lng], zoom, { duration: 1 });
     }
-  }, []);
+  }, [position, zoom, map]);
 
-  // Search for address
+  return null;
+};
+
+/**
+ * LocationPicker Props
+ * @param {Object} initialPosition - Initial marker position { lat, lng }
+ * @param {Function} onLocationChange - Callback when location changes
+ * @param {Function} onConfirm - Callback when location is confirmed
+ * @param {string} height - Map height
+ * @param {boolean} showSearch - Show search input (placeholder - needs geocoding API)
+ * @param {string} confirmButtonText - Text for confirm button
+ */
+const LocationPicker = ({
+  initialPosition = null,
+  onLocationChange = null,
+  onConfirm = null,
+  height = '400px',
+  showSearch = false,
+  confirmButtonText = 'Confirm Location',
+}) => {
+  const [selectedPosition, setSelectedPosition] = useState(initialPosition);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Use location hook for current location detection
+  const {
+    location: currentLocation,
+    loading: locationLoading,
+    error: locationError,
+    getLocation,
+    isSupported,
+  } = useLocation();
+
+  // Create marker icon
+  const markerIcon = useMemo(() => createCustomIcon('red'), []);
+
+  // Map center
+  const mapCenter = useMemo(() => {
+    if (selectedPosition) return selectedPosition;
+    if (initialPosition) return initialPosition;
+    return DEFAULT_CENTER;
+  }, [selectedPosition, initialPosition]);
+
+  // Handle location selection
+  const handleLocationSelect = useCallback((position) => {
+    setSelectedPosition(position);
+    if (onLocationChange) {
+      onLocationChange(position);
+    }
+  }, [onLocationChange]);
+
+  // Use current location
+  const handleUseCurrentLocation = useCallback(() => {
+    if (isSupported) {
+      getLocation();
+    }
+  }, [isSupported, getLocation]);
+
+  // Update selected position when current location is detected
+  useEffect(() => {
+    if (currentLocation && !selectedPosition) {
+      const position = { lat: currentLocation.lat, lng: currentLocation.lng };
+      handleLocationSelect(position);
+    }
+  }, [currentLocation, selectedPosition, handleLocationSelect]);
+
+  // Handle confirm
+  const handleConfirm = useCallback(() => {
+    if (selectedPosition && onConfirm) {
+      onConfirm(selectedPosition);
+    }
+  }, [selectedPosition, onConfirm]);
+
+  // Clear selection
+  const handleClear = useCallback(() => {
+    setSelectedPosition(null);
+    if (onLocationChange) {
+      onLocationChange(null);
+    }
+  }, [onLocationChange]);
+
+  // Handle search (placeholder - would need geocoding API)
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      const result = await LocationService.searchAddress(searchQuery);
-      setSearchResults(result.results || []);
-    } catch (err) {
-      setError('Search failed');
-    } finally {
-      setLoading(false);
-    }
+    
+    setIsSearching(true);
+    // Note: In production, integrate with a geocoding API like Nominatim or Google Geocoding
+    // For now, this is a placeholder
+    setTimeout(() => {
+      setIsSearching(false);
+      // Show message that search requires geocoding API
+      alert('Search requires a geocoding API integration. Click on the map or use current location.');
+    }, 500);
   }, [searchQuery]);
 
-  // Select search result
-  const handleSelectResult = useCallback(async (result) => {
-    try {
-      setLoading(true);
-
-      // Check delivery availability
-      const deliveryResult = await LocationService.isDeliveryAvailable(
-        result.location.lat,
-        result.location.lng
-      );
-
-      setSelectedLocation(result.location);
-      setAddress(result.address);
-      setDeliveryCheck(deliveryResult);
-      setSearchResults([]);
-    } catch (err) {
-      setError('Failed to select location');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Confirm selection
-  const handleConfirm = useCallback(() => {
-    if (selectedLocation && deliveryCheck?.available) {
-      onLocationSelect({
-        ...selectedLocation,
-        address,
-      });
-      onClose();
-    }
-  }, [selectedLocation, address, deliveryCheck, onLocationSelect, onClose]);
-
   return (
-    <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-      >
-        <motion.div
-          className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Select Delivery Location</h2>
-              <button
-                onClick={onClose}
-                className="p-1 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-6 space-y-4">
-            {/* Current Location Button */}
-            <button
-              onClick={handleGetCurrentLocation}
-              disabled={loading}
-              className="w-full flex items-center gap-3 p-4 bg-orange-50 hover:bg-orange-100 rounded-xl transition-colors"
-            >
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div className="text-left">
-                <p className="font-medium text-gray-800">Use Current Location</p>
-                <p className="text-sm text-gray-500">Detect my location automatically</p>
-              </div>
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-4">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-gray-400 text-sm">OR</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
-            {/* Search Input */}
-            <div className="relative">
+    <div className="flex flex-col gap-4">
+      {/* Controls Bar */}
+      <div className="flex flex-wrap gap-3 items-center justify-between bg-gray-50 p-3 rounded-xl">
+        {/* Search Input */}
+        {showSearch && (
+          <div className="flex-1 min-w-[200px] flex gap-2">
+            <div className="relative flex-1">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Search for your address..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Search for address..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <button
-                onClick={handleSearch}
-                disabled={loading || !searchQuery.trim()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 disabled:bg-gray-300"
-              >
-                Search
-              </button>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
+            <button
+              onClick={handleSearch}
+              disabled={isSearching || !searchQuery.trim()}
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
+            >
+              {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
+            </button>
+          </div>
+        )}
+
+        {/* Current Location Button */}
+        <button
+          onClick={handleUseCurrentLocation}
+          disabled={locationLoading || !isSupported}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
+        >
+          {locationLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Navigation className="w-4 h-4" />
+          )}
+          {locationLoading ? 'Detecting...' : 'Use My Location'}
+        </button>
+
+        {/* Clear Button */}
+        {selectedPosition && (
+          <button
+            onClick={handleClear}
+            className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            title="Clear selection"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
+      {/* Location Error */}
+      {locationError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {locationError}
+        </div>
+      )}
+
+      {/* Map Container */}
+      <div 
+        className="relative w-full rounded-xl overflow-hidden shadow-lg border border-gray-200"
+        style={{ height }}
+      >
+        {/* Instruction Overlay */}
+        {!selectedPosition && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
+            <span className="text-sm text-gray-600 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-orange-500" />
+              Click on the map to select location
+            </span>
+          </div>
+        )}
+
+        <MapContainer
+          center={[mapCenter.lat, mapCenter.lng]}
+          zoom={DEFAULT_ZOOM}
+          scrollWheelZoom={true}
+          className="w-full h-full cursor-crosshair"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          <MapClickHandler onLocationSelect={handleLocationSelect} />
+
+          {selectedPosition && (
+            <>
+              <FlyToLocation position={selectedPosition} />
+              <Marker 
+                position={[selectedPosition.lat, selectedPosition.lng]}
+                icon={markerIcon}
+                draggable={true}
+                eventHandlers={{
+                  dragend: (e) => {
+                    const { lat, lng } = e.target.getLatLng();
+                    handleLocationSelect({ lat, lng });
+                  },
+                }}
+              />
+            </>
+          )}
+        </MapContainer>
+      </div>
+
+      {/* Selected Location Info */}
+      {selectedPosition && (
+        <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Selected Coordinates</p>
+                <p className="text-sm font-mono text-gray-700">
+                  {selectedPosition.lat.toFixed(6)}, {selectedPosition.lng.toFixed(6)}
+                </p>
+              </div>
             </div>
 
-            {/* Search Results */}
-            {searchResults.length > 0 && (
-              <div className="max-h-48 overflow-y-auto space-y-2 border rounded-xl p-2">
-                {searchResults.map((result, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSelectResult(result)}
-                    className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                  >
-                    <p className="font-medium text-gray-800 text-sm">{result.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{result.address}</p>
-                  </button>
-                ))}
-              </div>
+            {onConfirm && (
+              <button
+                onClick={handleConfirm}
+                className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
+              >
+                <Check className="w-4 h-4" />
+                {confirmButtonText}
+              </button>
             )}
-
-            {/* Loading */}
-            {loading && (
-              <div className="py-4">
-                <LoadingSpinner message="Please wait..." />
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            {/* Selected Location */}
-            {selectedLocation && !loading && (
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-orange-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  </svg>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-800">{address}</p>
-                    {deliveryCheck && (
-                      <p className={`text-xs mt-1 ${deliveryCheck.available ? 'text-green-600' : 'text-red-600'}`}>
-                        {deliveryCheck.available 
-                          ? `✓ Delivery available (${deliveryCheck.distance} km)`
-                          : deliveryCheck.message
-                        }
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Confirm Button */}
-            <Button
-              onClick={handleConfirm}
-              disabled={!selectedLocation || !deliveryCheck?.available}
-              fullWidth
-              size="lg"
-            >
-              Confirm Location
-            </Button>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </div>
+      )}
+    </div>
   );
 };
 

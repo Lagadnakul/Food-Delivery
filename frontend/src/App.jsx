@@ -10,7 +10,6 @@ import RestaurantDetail from './Pages/RestaurantDetail';
 import RestaurantsPage from './Pages/RestaurantsPage';
 import MobileApp from './Pages/MobileApp';
 import Contact from './Pages/Contact';
-import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { MenuProvider } from './contexts/MenuContext';
 import CartModal from './components/Cart/CartModal';
@@ -39,18 +38,18 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <MenuProvider>
-          <CartProvider>
-            <div className="min-h-screen flex flex-col">
-              <Routes>              {/* Dashboard Routes */}
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <ProfilePage />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                } />
+      <MenuProvider>
+        <CartProvider>
+          <div className="min-h-screen flex flex-col">
+            <Routes>
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <ProfilePage />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              } />
               
               <Route path="/dashboard/profile" element={
                 <ProtectedRoute>
@@ -193,9 +192,8 @@ function App() {
               limit={3}
             />
           </div>
-          </CartProvider>
-        </MenuProvider>
-      </AuthProvider>
+        </CartProvider>
+      </MenuProvider>
     </Router>
   );
 }
