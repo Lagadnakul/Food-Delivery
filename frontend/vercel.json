@@ -14,6 +14,10 @@
       "dest": "/favicon.ico"
     },
     {
+      "src": "/food_1.png",
+      "dest": "/food_1.png"
+    },
+    {
       "src": "/(.*)\\.(.+)$",
       "dest": "/$1.$2"
     },
@@ -21,6 +25,8 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
-}
+  ],
+  "env": {
+    "VITE_API_URL": "http://localhost:4000/api"
+  }
 }
