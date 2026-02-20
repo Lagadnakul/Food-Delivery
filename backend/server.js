@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import userRoutes from './routes/userRoute.js';
 import foodRoutes from './routes/foodRoute.js';
 import orderRoutes from './routes/orderRoute.js';
+import paymentRoutes from './routes/paymentRoute.js';
 
 // Load environment variables early
 dotenv.config({ path: './.env.local' });
@@ -42,8 +43,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// MongoDB connection string with fallback
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://Nakullagad:10072003@cluster0.dazc7.mongodb.net/HungerHive';
+
 // Connect to MongoDB with better error handling
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(MONGODB_URI)
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => {
     console.error('MongoDB connection error:', err);
@@ -54,8 +58,8 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/user', userRoutes);
 app.use('/food', foodRoutes);
 app.use('/orders', orderRoutes);
+app.use('/payment', paymentRoutes);
 
-// Health check endpoint
 // Health check endpoint
 app.get("/", (req, res) => {
   const uptime = process.uptime();
