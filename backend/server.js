@@ -1,11 +1,11 @@
-import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
 import mongoose from 'mongoose';
-import userRoutes from './routes/userRoute.js';
 import foodRoutes from './routes/foodRoute.js';
 import orderRoutes from './routes/orderRoute.js';
 import paymentRoutes from './routes/paymentRoute.js';
+import userRoutes from './routes/userRoute.js';
 
 // Load environment variables early
 dotenv.config({ path: './.env.local' });
@@ -15,7 +15,9 @@ const app = express();
 // CORS configuration - modify for production
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ["https://food-delivery-82wu.onrender.com",
+    ? [
+      "https://hunger-hive.vercel.app",
+      "https://food-delivery-82wu.onrender.com",
       "http://localhost:5173",
       "http://localhost:4000",
       "http://localhost:5174",
