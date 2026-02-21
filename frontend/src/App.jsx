@@ -1,28 +1,28 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar/Navbar';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import CartModal from './components/Cart/CartModal';
 import Footer from './components/Footer/Footer';
+import Navbar from './components/Navbar/Navbar';
+import { AuthProvider } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
+import { MenuProvider } from './contexts/MenuContext';
+import Checkout from './Pages/Checkout';
+import Contact from './Pages/Contact';
 import Home from './Pages/Home';
 import Menu from './Pages/Menu';
-import Checkout from './Pages/Checkout';
+import MobileApp from './Pages/MobileApp';
 import OrderConfirmation from './Pages/OrderConfirmation';
 import RestaurantDetail from './Pages/RestaurantDetail';
 import RestaurantsPage from './Pages/RestaurantsPage';
-import MobileApp from './Pages/MobileApp';
-import Contact from './Pages/Contact';
-import { CartProvider } from './contexts/CartContext';
-import { MenuProvider } from './contexts/MenuContext';
-import CartModal from './components/Cart/CartModal';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import './styles/toast.css';
 
 // Import Dashboard Components
 import DashboardLayout from './components/Dashboard/DashboardLayout';
-import ProfilePage from './Pages/Dashboard/ProfilePage';
-import OrdersPage from './Pages/Dashboard/OrdersPage';
 import AddressesPage from './Pages/Dashboard/AddressesPage';
 import FavoritesPage from './Pages/Dashboard/FavoritesPage';
+import OrdersPage from './Pages/Dashboard/OrdersPage';
+import ProfilePage from './Pages/Dashboard/ProfilePage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -38,26 +38,27 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <Router>
-      <MenuProvider>
-        <CartProvider>
-          <div className="min-h-screen flex flex-col">
-            <Routes>
-              {/* Dashboard Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <ProfilePage />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/dashboard/profile" element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <ProfilePage />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              } />
+      <AuthProvider>
+        <MenuProvider>
+          <CartProvider>
+            <div className="min-h-screen flex flex-col">
+              <Routes>
+                {/* Dashboard Routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <ProfilePage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/dashboard/profile" element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <ProfilePage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                } />
               
               <Route path="/dashboard/orders" element={
                 <ProtectedRoute>
@@ -191,9 +192,10 @@ function App() {
               progressClassName="toast-progress"
               limit={3}
             />
-          </div>
-        </CartProvider>
-      </MenuProvider>
+            </div>
+          </CartProvider>
+        </MenuProvider>
+      </AuthProvider>
     </Router>
   );
 }

@@ -7,7 +7,7 @@
  * - Loading and error states
  * - Cleanup to prevent memory leaks
  */
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /**
  * Geolocation error messages mapped to user-friendly strings

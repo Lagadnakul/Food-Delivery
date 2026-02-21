@@ -4,13 +4,13 @@
  * A specialized map component for showing delivery tracking
  * with real-time updates, route visualization, and ETA
  */
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { MapPin, Navigation, Clock, Package, RefreshCw, Loader2, Truck } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
+import { Clock, MapPin, Package, RefreshCw, Truck } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet';
 
-import { createRestaurantIcon, createUserIcon, createCustomIcon } from '../../utils/fixLeafletIcon';
 import { calculateDeliveryInfo } from '../../utils/calculateDistance';
+import { createCustomIcon, createRestaurantIcon, createUserIcon } from '../../utils/fixLeafletIcon';
 
 const DEFAULT_ZOOM = 14;
 

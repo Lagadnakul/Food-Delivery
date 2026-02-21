@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 });
 
 // MongoDB connection string with fallback
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://Nakullagad:10072003@cluster0.dazc7.mongodb.net/HungerHive';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://nakullagad084_db_user:Nakul12345@cluster0.yb6pf9c.mongodb.net/HungerHive?retryWrites=true&w=majority';
 
 // Connect to MongoDB with better error handling
 mongoose.connect(MONGODB_URI)

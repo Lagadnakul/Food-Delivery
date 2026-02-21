@@ -4,6 +4,6 @@
  * Export all custom hooks for easy importing
  */
 
-export { default as useLocation, useLocation as useGeolocation } from './useLocation';
+export { useLocation as useGeolocation, default as useLocation } from './useLocation';
 // export { default as useOrders } from './useOrders'; // Uncomment when implemented
 

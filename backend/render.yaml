@@ -8,9 +8,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        value: mongodb+srv://Nakullagad:10072003@cluster0.dazc7.mongodb.net/HungerHive
+        value: mongodb+srv://nakullagad084_db_user:Nakul12345@cluster0.yb6pf9c.mongodb.net/HungerHive?retryWrites=true&w=majority
       - key: JWT_SECRET
-        value: random#secret
+        value: x7dH89skdjhs873hdjhs87dhs87dhs87dhs87dhs87dh
       - key: IMAGEKIT_PUBLIC_KEY
         value: public_Sk+so7yluyPCX79LAWnaa6zsIs4=
       - key: IMAGEKIT_PRIVATE_KEY

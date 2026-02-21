@@ -21,9 +21,9 @@
     }
   ],
   "env": {
-    "MONGODB_URI": "mongodb+srv://Nakullagad:10072003@cluster0.dazc7.mongodb.net/HungerHive",
+    "MONGODB_URI": "mongodb+srv://nakullagad084_db_user:Nakul12345@cluster0.yb6pf9c.mongodb.net/HungerHive?retryWrites=true&w=majority",
     "NODE_ENV": "production",
-    "JWT_SECRET": "random#secret",
+    "JWT_SECRET": "x7dH89skdjhs873hdjhs87dhs87dhs87dhs87dhs87dh",
     "IMAGEKIT_PUBLIC_KEY": "public_Sk+so7yluyPCX79LAWnaa6zsIs4=",
     "IMAGEKIT_PRIVATE_KEY": "private_RtVFvw93AZW4viuZN1YrkZyLhoE=",
     "IMAGEKIT_URL_ENDPOINT": "https://ik.imagekit.io/bxi3adntf"

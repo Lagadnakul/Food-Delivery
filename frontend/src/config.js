@@ -1,5 +1,5 @@
 // API base URL for backend connections
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 // Currency and financial settings
 export const CURRENCY = '₹';

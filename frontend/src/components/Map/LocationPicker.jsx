@@ -4,13 +4,13 @@
  * An interactive map component for selecting delivery location
  * by clicking on the map or using current location
  */
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import { MapPin, Navigation, Loader2, Search, X, Check } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
+import { Check, Loader2, MapPin, Navigation, Search, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 
-import { createCustomIcon } from '../../utils/fixLeafletIcon';
 import { useLocation } from '../../hooks/useLocation';
+import { createCustomIcon } from '../../utils/fixLeafletIcon';
 
 const DEFAULT_CENTER = { lat: 20.5937, lng: 78.9629 };
 const DEFAULT_ZOOM = 13;

@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 dotenv.config({ path: './.env.local' });
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://Nakullagad:10072003@cluster0.dazc7.mongodb.net/HungerHive';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://nakullagad084_db_user:Nakul12345@cluster0.yb6pf9c.mongodb.net/HungerHive?retryWrites=true&w=majority';
 
 export const connectDB = async () => {
     try {
