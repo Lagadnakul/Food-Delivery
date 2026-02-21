@@ -10,15 +10,15 @@
  * - Responsive design
  * - Proper error handling
  */
-import React, { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { MapPin, Navigation, Clock, AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
+import { AlertCircle, Clock, Loader2, MapPin, Navigation, RefreshCw } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-leaflet';
 
 // Import utilities
-import { createRestaurantIcon, createUserIcon } from '../../utils/fixLeafletIcon';
-import { calculateDeliveryInfo } from '../../utils/calculateDistance';
 import { useLocation } from '../../hooks/useLocation';
+import { calculateDeliveryInfo } from '../../utils/calculateDistance';
+import { createRestaurantIcon, createUserIcon } from '../../utils/fixLeafletIcon';
 
 // Default coordinates (center of India as fallback)
 const DEFAULT_CENTER = { lat: 20.5937, lng: 78.9629 };

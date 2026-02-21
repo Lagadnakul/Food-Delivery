@@ -1,6 +1,6 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { showToast } from '../utils/toastUtils';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { CART_KEY, DELIVERY_FEE, TAX_RATE } from '../config';
+import { showToast } from '../utils/toastUtils';
 
 // Create the context
 const CartContext = createContext(null);
@@ -126,11 +126,7 @@ export const CartProvider = ({ children }) => {
   // Remove item from cart
   const removeFromCart = (itemId) => {
     if (!isAuthenticated()) {
-      toast.info("Please sign in to manage your cart", {
-        icon: '🔒',
-        position: 'top-right',
-        autoClose: 3000
-      });
+      showToast.auth.needLogin();
       setIsLoginModalOpen(true);
       return;
     }
@@ -142,11 +138,7 @@ export const CartProvider = ({ children }) => {
       );
       
       if (existingItem) {
-        toast.info(`Removed ${existingItem.name} from your cart`, {
-          icon: '🗑️',
-          position: 'top-right',
-          autoClose: 2000
-        });
+        showToast.cart.removed(existingItem.name);
       }
       
       return prevItems.filter(item => 
@@ -158,11 +150,7 @@ export const CartProvider = ({ children }) => {
   // Update item quantity with improved handler
   const updateQuantity = (itemId, newQuantity) => {
     if (!isAuthenticated()) {
-      toast.info("Please sign in to manage your cart", {
-        icon: '🔒',
-        position: 'top-right',
-        autoClose: 3000
-      });
+      showToast.auth.needLogin();
       setIsLoginModalOpen(true);
       return;
     }
@@ -190,9 +178,7 @@ export const CartProvider = ({ children }) => {
     }
 
     setCartItems([]);
-    showToast.info('Cart cleared', {
-      icon: '🧹'
-    });
+    showToast.info('Cart cleared');
     setIsCartOpen(false);
   };
 

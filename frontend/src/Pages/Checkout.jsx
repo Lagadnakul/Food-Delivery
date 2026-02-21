@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import { CURRENCY } from '../config';
 import { assets } from '../assets/assets';
-import axios from 'axios';
-import { API_URL } from '../config';
+import { CURRENCY } from '../config';
+import { useCart } from '../contexts/CartContext';
+import AuthService from '../services/authService';
+import OrderService from '../services/orderService';
 import { showToast } from '../utils/toastUtils';
 
 const Checkout = () => {
@@ -59,9 +59,19 @@ const Checkout = () => {
     setActiveStep(prev => prev - 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
   const handlePlaceOrder = async () => {
     if (isSubmitting) return;
+    
+    // Validate required fields
+    if (!deliveryDetails.name || !deliveryDetails.phone || !deliveryDetails.address) {
+      showToast.error('Please fill in all delivery details');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      showToast.error('Your cart is empty');
+      return;
+    }
     
     setIsSubmitting(true);
     try {
@@ -69,25 +79,17 @@ const Checkout = () => {
       
       // If user wants to save address and they aren't using a saved address already
       if (saveAddressCheckbox && saveAddressCheckbox.checked && !selectedAddressId) {
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            // Save the address to user profile
-            await axios.post(
-              `${API_URL}/user/addresses`, 
-              {
-                name: deliveryDetails.name,
-                phone: deliveryDetails.phone,
-                address: deliveryDetails.address,
-                label: 'home', // Default label
-                isDefault: false // Not default by default
-              },
-              { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-          } catch (err) {
-            console.error("Error saving address:", err);
-            // Continue with order even if saving address fails
-          }
+        try {
+          await AuthService.addAddress({
+            name: deliveryDetails.name,
+            phone: deliveryDetails.phone,
+            address: deliveryDetails.address,
+            label: 'home',
+            isDefault: false
+          });
+        } catch (err) {
+          console.error("Error saving address:", err);
+          // Continue with order even if saving address fails
         }
       }
       
@@ -104,7 +106,7 @@ const Checkout = () => {
           name: item.name,
           price: Number(parseFloat(item.price).toFixed(2)),
           quantity: Number(item.quantity),
-          image: item.image.replace(/^\/src\/assets\//, '')
+          image: item.image ? item.image.replace(/^\/src\/assets\//, '') : ''
         })),
         payment: {
           method: paymentMethod,
@@ -116,30 +118,37 @@ const Checkout = () => {
         status: 'pending'
       };
       
-      // Make API call to create order
-      const response = await axios.post(`${API_URL}/orders`, orderData);
+      // Make API call to create order using OrderService
+      const response = await OrderService.placeOrder(orderData);
       
-      // Clear the cart after successful order
-      clearCart();
-      
-      // Navigate to the order confirmation page
-      const orderId = response.data._id || (response.data.data && response.data.data._id);
-      if (orderId) {
-        navigate(`/order-confirmation/${orderId}`, { 
-          state: { orderDetails: response.data.data || response.data } 
-        });
-        showToast.order.placed();
+      if (response.success) {
+        // Clear the cart after successful order
+        clearCart();
+        
+        // Navigate to the order confirmation page
+        const orderId = response._id || (response.data && response.data._id);
+        if (orderId) {
+          navigate(`/order-confirmation/${orderId}`, { 
+            state: { orderDetails: response.data || response } 
+          });
+          showToast.order.placed();
+        } else {
+          showToast.success('Order placed successfully!');
+          navigate('/');
+        }
       } else {
-        showToast.error('Order created but could not redirect to confirmation page.');
+        // Handle API error response
+        showToast.order.failed(response.message || 'Failed to place order. Please try again.');
       }
     } catch (error) {
       console.error('Error placing order:', error);
       if (error.response) {
-        showToast.order.failed(error.response.data.message || 'Please check your details and try again.');
+        showToast.order.failed(error.response.data?.message || 'Please check your details and try again.');
+      } else if (error.message) {
+        showToast.error(error.message);
       } else {
         showToast.error('Connection error. Please check your internet and try again.');
-      }
-    } finally {
+      }    } finally {
       setIsSubmitting(false);
     }
   };

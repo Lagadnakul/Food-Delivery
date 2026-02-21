@@ -1,7 +1,7 @@
-import userModel from '../models/userModel.js';
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import validator from 'validator';
+import userModel from '../models/userModel.js';
 
 // Create token function - moved to the top so it can be used by both login and register
 const createToken = (id) => {
@@ -345,13 +345,7 @@ const setDefaultAddress = async (req, res) => {
     }
 };
 
-export { 
-    loginUser, 
-    registerUser, 
-    getUserProfile, 
-    updateUserProfile,
-    addAddress,
-    updateAddress,
-    deleteAddress,
-    setDefaultAddress
+export {
+    addAddress, deleteAddress, getUserProfile, loginUser,
+    registerUser, setDefaultAddress, updateAddress, updateUserProfile
 };

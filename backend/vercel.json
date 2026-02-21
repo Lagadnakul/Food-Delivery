@@ -23,7 +23,7 @@
   "env": {
     "MONGODB_URI": "mongodb+srv://<user>:<password>@<cluster>.mongodb.net/HungerHive",
     "NODE_ENV": "production",
-    "JWT_SECRET": "random#secret",
+    "JWT_SECRET": "<JWT_SECRET>",
     "IMAGEKIT_PUBLIC_KEY": "<IMAGEKIT_PUBLIC_KEY>",
     "IMAGEKIT_PRIVATE_KEY": "<IMAGEKIT_PRIVATE_KEY>",
     "IMAGEKIT_URL_ENDPOINT": "https://ik.imagekit.io/bxi3adntf"

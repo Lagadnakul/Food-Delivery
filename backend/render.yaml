@@ -10,7 +10,7 @@ services:
       - key: MONGODB_URI
         value: mongodb+srv://<user>:<password>@<cluster>.mongodb.net/HungerHive
       - key: JWT_SECRET
-        value: random#secret
+        value: <JWT_SECRET>
       - key: IMAGEKIT_PUBLIC_KEY
         value: <IMAGEKIT_PUBLIC_KEY>
       - key: IMAGEKIT_PRIVATE_KEY
