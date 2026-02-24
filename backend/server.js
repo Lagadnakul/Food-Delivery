@@ -7,8 +7,14 @@ import orderRoutes from './routes/orderRoute.js';
 import paymentRoutes from './routes/paymentRoute.js';
 import userRoutes from './routes/userRoute.js';
 
-// Load environment variables early
+// Load environment variables early - try .env first, then .env.local
+dotenv.config();
 dotenv.config({ path: './.env.local' });
+
+// Fallback JWT_SECRET if not in env
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'x7dH89skdjhs873hdjhs87dhs87dhs87dhs87dhs87dh';
+}
 
 const app = express();
 

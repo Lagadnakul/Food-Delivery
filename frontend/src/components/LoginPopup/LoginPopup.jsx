@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
+import { API_URL, TOKEN_KEY, USER_KEY } from '../../config';
 import { showToast } from '../../utils/toastUtils';
-import { API_URL } from '../../config';
 import './LoginPopup.css';
 
 const LoginPopup = ({ isOpen, onClose, onLoginSuccess }) => {
@@ -34,9 +34,11 @@ const LoginPopup = ({ isOpen, onClose, onLoginSuccess }) => {
       const response = await axios.post(`${API_URL}${endpoint}`, formData);
 
       if (response.data.success) {
-        // Save user data and token to localStorage
+        // Save user data and token to localStorage (both keys for compatibility)
         localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+        localStorage.setItem(TOKEN_KEY, response.data.token);
 
         if (isLogin) {
           showToast.auth.loginSuccess();
@@ -48,6 +50,9 @@ const LoginPopup = ({ isOpen, onClose, onLoginSuccess }) => {
         if (onLoginSuccess) {
           onLoginSuccess(response.data.user);
         }
+        
+        // Force a page reload to ensure all contexts pick up the new auth state
+        window.location.reload();
         
         // Close the popup
         onClose();
@@ -94,12 +99,11 @@ const LoginPopup = ({ isOpen, onClose, onLoginSuccess }) => {
       } 
     },
   };
-
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm login-popup-overlay"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm login-popup-overlay p-4"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -107,7 +111,7 @@ const LoginPopup = ({ isOpen, onClose, onLoginSuccess }) => {
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
             variants={modalVariants}
             onClick={(e) => e.stopPropagation()}
             initial="hidden"

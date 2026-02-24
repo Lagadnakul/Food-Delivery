@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets';
 import { CURRENCY } from '../config';
+import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import AuthService from '../services/authService';
 import OrderService from '../services/orderService';
@@ -10,6 +11,7 @@ import { showToast } from '../utils/toastUtils';
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user, loading } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
@@ -31,22 +33,24 @@ const Checkout = () => {
     instructions: ''
   });
 
-  // Load user data from localStorage if available
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        setDeliveryDetails(prev => ({
-          ...prev,
-          name: userData.name || prev.name,
-          phone: userData.phone || prev.phone,
-        }));
-      } catch (error) {
-        console.error("Error parsing stored user data:", error);
-      }
-    }
+  // Handle delivery details input change - using callback to prevent re-renders
+  const handleDeliveryChange = useCallback((field, value) => {
+    setDeliveryDetails(prev => ({
+      ...prev,
+      [field]: value
+    }));
   }, []);
+
+  // Load user data from AuthContext
+  useEffect(() => {
+    if (user) {
+      setDeliveryDetails(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        phone: user.phone || prev.phone,
+      }));
+    }
+  }, [user]);
 
   const steps = ['Cart Review', 'Delivery Info', 'Payment'];
 
@@ -58,9 +62,16 @@ const Checkout = () => {
   const prevStep = () => {
     setActiveStep(prev => prev - 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  const handlePlaceOrder = async () => {
+  };  const handlePlaceOrder = async () => {
     if (isSubmitting) return;
+    
+    // Check if user is authenticated - check both context and localStorage
+    const token = localStorage.getItem('token');
+    if (!token) {
+      showToast.error('Please login to place an order');
+      navigate('/');
+      return;
+    }
     
     // Validate required fields
     if (!deliveryDetails.name || !deliveryDetails.phone || !deliveryDetails.address) {
@@ -349,13 +360,12 @@ const Checkout = () => {
                   <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                </div>
-                <input
+                </div>                <input
                   type="text"
                   id="form-name"
                   name="name"
                   value={deliveryDetails.name}
-                  onChange={(e) => setDeliveryDetails({...deliveryDetails, name: e.target.value})}
+                  onChange={(e) => handleDeliveryChange('name', e.target.value)}
                   className="w-full pl-12 pr-4 py-3.5 text-gray-700 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm"
                   placeholder="Enter your full name"
                   required
@@ -373,13 +383,12 @@ const Checkout = () => {
                   <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                </div>
-                <input
+                </div>                <input
                   type="tel"
                   id="form-phone"
                   name="phone"
                   value={deliveryDetails.phone}
-                  onChange={(e) => setDeliveryDetails({...deliveryDetails, phone: e.target.value})}
+                  onChange={(e) => handleDeliveryChange('phone', e.target.value)}
                   className="w-full pl-12 pr-4 py-3.5 text-gray-700 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm"
                   placeholder="Your contact number"
                   required
@@ -398,13 +407,12 @@ const Checkout = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                </div>
-                <textarea
+                </div>                <textarea
                   id="form-address"
                   name="address"
                   rows="3"
                   value={deliveryDetails.address}
-                  onChange={(e) => setDeliveryDetails({...deliveryDetails, address: e.target.value})}
+                  onChange={(e) => handleDeliveryChange('address', e.target.value)}
                   className="w-full pl-12 pr-4 py-3 text-gray-700 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm resize-none"
                   placeholder="Enter your full address"
                   required
@@ -422,13 +430,12 @@ const Checkout = () => {
                   <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                   </svg>
-                </div>
-                <textarea
+                </div>                <textarea
                   id="form-instructions"
                   name="instructions"
                   rows="2"
                   value={deliveryDetails.instructions}
-                  onChange={(e) => setDeliveryDetails({...deliveryDetails, instructions: e.target.value})}
+                  onChange={(e) => handleDeliveryChange('instructions', e.target.value)}
                   className="w-full pl-12 pr-4 py-3 text-gray-700 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm resize-none"
                   placeholder="Any special instructions for delivery"
                 ></textarea>
@@ -741,7 +748,6 @@ const Checkout = () => {
       </div>
     </div>
   );
-
   // Render the active step content
   const renderStepContent = () => {
     switch (activeStep) {
@@ -755,22 +761,25 @@ const Checkout = () => {
         return <ReviewOrder />;
     }
   };
-
   return (
     <div className="container mx-auto px-4 py-12 max-w-3xl pt-30">
       <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Checkout</h1>
       <StepIndicator />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeStep}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.4 }}
-        >
-          {renderStepContent()}
-        </motion.div>
-      </AnimatePresence>
+      
+      {/* Step 0: Review Order */}
+      <div style={{ display: activeStep === 0 ? 'block' : 'none' }}>
+        <ReviewOrder />
+      </div>
+      
+      {/* Step 1: Delivery Details */}
+      <div style={{ display: activeStep === 1 ? 'block' : 'none' }}>
+        <DeliveryDetails />
+      </div>
+      
+      {/* Step 2: Payment */}
+      <div style={{ display: activeStep === 2 ? 'block' : 'none' }}>
+        <Payment />
+      </div>
     </div>
   );
 };
