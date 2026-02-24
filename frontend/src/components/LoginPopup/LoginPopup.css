@@ -1,6 +1,12 @@
 .login-popup-overlay {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
 }
 
 /* Add custom animation for the popup */

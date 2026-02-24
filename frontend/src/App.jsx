@@ -103,15 +103,16 @@ function App() {
                   </main>
                   <Footer />
                 </>
-              } />
-              <Route path="/checkout" element={
-                <>
-                  <Navbar />
-                  <main className="flex-grow">
-                    <Checkout />
-                  </main>
-                  <Footer />
-                </>
+              } />              <Route path="/checkout" element={
+                <ProtectedRoute>
+                  <>
+                    <Navbar />
+                    <main className="flex-grow">
+                      <Checkout />
+                    </main>
+                    <Footer />
+                  </>
+                </ProtectedRoute>
               } />
               <Route path="/order-confirmation/:orderId" element={
                 <>
