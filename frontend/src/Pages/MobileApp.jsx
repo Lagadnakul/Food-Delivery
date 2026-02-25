@@ -1,6 +1,5 @@
 import React from 'react';
 import { assets } from '../assets/assets';
-import { motion } from 'framer-motion';
 import { 
   Clock, 
   Tag, 
@@ -10,8 +9,11 @@ import {
   Utensils, 
   Heart, 
   Star, 
-  ChevronRight 
+  ChevronRight,
+  Search
 } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 
 const MobileApp = () => {
   return (
@@ -37,20 +39,14 @@ const MobileApp = () => {
               </p>
               
               <div className="flex flex-wrap gap-5 mb-8">
-                <motion.a 
-                  href="#" 
-                  className="transform transition-transform duration-300 hover:scale-105 shadow-lg rounded-xl"
-                  whileHover={{ y: -5 }}
-                >
-                  <img src={assets.app_store} alt="Download on App Store" className="h-14" />
-                </motion.a>
-                <motion.a 
-                  href="#" 
-                  className="transform transition-transform duration-300 hover:scale-105 shadow-lg rounded-xl"
-                  whileHover={{ y: -5 }}
-                >
-                  <img src={assets.play_store} alt="Get it on Google Play" className="h-14" />
-                </motion.a>
+                <div className="group relative">
+                  <img src={assets.app_store} alt="App Store" className="h-14 rounded-xl shadow-lg opacity-80 grayscale" />
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Coming Soon</span>
+                </div>
+                <div className="group relative">
+                  <img src={assets.play_store} alt="Google Play" className="h-14 rounded-xl shadow-lg opacity-80 grayscale" />
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Coming Soon</span>
+                </div>
               </div>
               
               <div className="flex items-center space-x-4 text-gray-500">
@@ -120,7 +116,7 @@ const MobileApp = () => {
                       
                       {/* Search bar */}
                       <div className="bg-gray-100 rounded-full px-4 py-2 flex items-center">
-                        <div className="w-4 h-4 text-gray-400">🔍</div>
+                        <Search className="w-4 h-4 text-gray-400" aria-hidden="true" />
                         <p className="text-xs text-gray-400 ml-2">Search for restaurants or foods</p>
                       </div>
                     </div>
@@ -323,20 +319,14 @@ const MobileApp = () => {
                 Join thousands of satisfied users who have transformed their food ordering experience. Download now and get 20% off your first order!
               </p>
               <div className="flex flex-wrap gap-4">
-                <motion.a 
-                  href="#" 
-                  className="transform transition-transform duration-300 hover:scale-105"
-                  whileHover={{ y: -5 }}
-                >
-                  <img src={assets.app_store} alt="Download on App Store" className="h-14" />
-                </motion.a>
-                <motion.a 
-                  href="#" 
-                  className="transform transition-transform duration-300 hover:scale-105"
-                  whileHover={{ y: -5 }}
-                >
-                  <img src={assets.play_store} alt="Get it on Google Play" className="h-14" />
-                </motion.a>
+                <div className="group relative">
+                  <img src={assets.app_store} alt="App Store" className="h-14 rounded-xl opacity-90 grayscale" />
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Coming Soon</span>
+                </div>
+                <div className="group relative">
+                  <img src={assets.play_store} alt="Google Play" className="h-14 rounded-xl opacity-90 grayscale" />
+                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Coming Soon</span>
+                </div>
               </div>
             </div>
             <div className="md:w-1/2 flex justify-center md:justify-end">

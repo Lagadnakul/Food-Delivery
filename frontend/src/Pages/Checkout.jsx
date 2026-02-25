@@ -1,4 +1,12 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import { Separator } from '../components/ui/separator';
+import { Button } from '../components/ui/button';
+// eslint-disable-next-line no-unused-vars
+import { AnimatePresence ,motion} from 'framer-motion';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets';
@@ -11,11 +19,11 @@ import { showToast } from '../utils/toastUtils';
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user, loading } = useAuth();
+  const { user } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [selectedAddressId] = useState(null);
   const { 
     cartItems, 
     cartSubtotal,
@@ -62,7 +70,9 @@ const Checkout = () => {
   const prevStep = () => {
     setActiveStep(prev => prev - 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };  const handlePlaceOrder = async () => {
+  };
+
+  const handlePlaceOrder = async () => {
     if (isSubmitting) return;
     
     // Check if user is authenticated - check both context and localStorage
@@ -159,163 +169,166 @@ const Checkout = () => {
         showToast.error(error.message);
       } else {
         showToast.error('Connection error. Please check your internet and try again.');
-      }    } finally {
+      }
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   // Step 1: Review Order Items
-  const ReviewOrder = () => (
+  const renderReviewOrder = () => (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="bg-white rounded-2xl shadow-lg overflow-hidden "
     >
-      <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-        <h2 className="text-2xl font-bold">Your Cart</h2>
-        <p className="text-orange-100 mt-1">Review your items before checkout</p>
-      </div>
+      <Card className="shadow-lg overflow-hidden border-0">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+          <h2 className="text-2xl font-bold">Your Cart</h2>
+          <p className="text-orange-100 mt-1">Review your items before checkout</p>
+        </div>
 
-      <div className="p-6">
-        {cartItems.length === 0 ? (
-          <div className="text-center py-12">
-            <motion.div 
-              className="w-28 h-28 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6"
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200 }}
-            >
-              <svg className="w-14 h-14 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </motion.div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">Your cart is empty</h3>
-            <p className="text-gray-500 mb-8 max-w-md mx-auto">
-              Looks like you haven't added any delicious items to your cart yet. 
-              Explore our menu to find something tasty!
-            </p>
-            <Link 
-              to="/menu"
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all transform hover:scale-105"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-              </svg>
-              Browse Menu
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-y-auto max-h-[400px] pr-2 scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-gray-50">
-              <AnimatePresence>
-                {cartItems.map(item => (
-                  <motion.div 
-                    key={item.cartId || item._id || item.id} 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex items-center border-b border-gray-100 py-4 group hover:bg-orange-50 px-3 rounded-lg transition-colors"
-                  >
-                    <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
-                      <img 
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const itemId = parseInt(item._id || item.id);
-                          if (!isNaN(itemId) && itemId >= 1 && itemId <= 32) {
-                            e.target.src = assets[`food_${itemId}`];
-                          } else {
-                            e.target.src = assets.food_1;
-                          }
-                        }}
-                      />
-                    </div>
-                    
-                    <div className="ml-4 flex-grow">
-                      <div className="flex justify-between">
-                        <h3 className="font-semibold text-gray-800 mb-1">{item.name}</h3>
-                        <div className="text-orange-600 font-medium">
-                          {CURRENCY}{(item.price * item.quantity).toFixed(2)}
-                        </div>
+        <CardContent className="p-6">
+          {cartItems.length === 0 ? (
+            <div className="text-center py-12">
+              <motion.div 
+                className="w-28 h-28 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6"
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200 }}
+              >
+                <svg className="w-14 h-14 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </motion.div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">Your cart is empty</h3>
+              <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                Looks like you haven't added any delicious items to your cart yet. 
+                Explore our menu to find something tasty!
+              </p>
+              <Link 
+                to="/menu"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+                Browse Menu
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-y-auto max-h-[400px] pr-2 scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-gray-50">
+                <AnimatePresence>
+                  {cartItems.map(item => (
+                    <motion.div 
+                      key={item.cartId || item._id || item.id} 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center border-b border-gray-100 py-4 group hover:bg-orange-50 px-3 rounded-lg transition-colors"
+                    >
+                      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
+                        <img 
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const itemId = parseInt(item._id || item.id);
+                            if (!isNaN(itemId) && itemId >= 1 && itemId <= 32) {
+                              e.target.src = assets[`food_${itemId}`];
+                            } else {
+                              e.target.src = assets.food_1;
+                            }
+                          }}
+                        />
                       </div>
                       
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-500">
-                          {CURRENCY}{parseFloat(item.price).toFixed(2)} per item
-                        </span>
+                      <div className="ml-4 flex-grow">
+                        <div className="flex justify-between">
+                          <h3 className="font-semibold text-gray-800 mb-1">{item.name}</h3>
+                          <div className="text-orange-600 font-medium">
+                            {CURRENCY}{(item.price * item.quantity).toFixed(2)}
+                          </div>
+                        </div>
                         
-                        <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
-                          <motion.button 
-                            whileHover={{ backgroundColor: "#f97316", color: "#ffffff" }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => updateQuantity(item.cartId || item._id || item.id, item.quantity - 1)}
-                            className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
-                            </svg>
-                          </motion.button>
-                          <span className="w-10 text-center font-medium text-gray-700">{item.quantity}</span>
-                          <motion.button 
-                            whileHover={{ backgroundColor: "#f97316", color: "#ffffff" }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => updateQuantity(item.cartId || item._id || item.id, item.quantity + 1)}
-                            className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                          </motion.button>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">
+                            {CURRENCY}{parseFloat(item.price).toFixed(2)} per item
+                          </span>
+                          
+                          <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+                            <motion.button 
+                              whileHover={{ backgroundColor: "#f97316", color: "#ffffff" }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => updateQuantity(item.cartId || item._id || item.id, item.quantity - 1)}
+                              className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
+                              </svg>
+                            </motion.button>
+                            <span className="w-10 text-center font-medium text-gray-700">{item.quantity}</span>
+                            <motion.button 
+                              whileHover={{ backgroundColor: "#f97316", color: "#ffffff" }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => updateQuantity(item.cartId || item._id || item.id, item.quantity + 1)}
+                              className="w-8 h-8 flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                            </motion.button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-            
-            <div className="mt-8 space-y-2.5 bg-gray-50 p-5 rounded-xl">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span>{CURRENCY}{cartSubtotal.toFixed(2)}</span>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax</span>
-                <span>{CURRENCY}{cartTax.toFixed(2)}</span>
+              
+              <div className="mt-8 space-y-2.5 bg-gray-50 p-5 rounded-xl">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span>{CURRENCY}{cartSubtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Tax</span>
+                  <span>{CURRENCY}{cartTax.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Delivery Fee</span>
+                  <span>{CURRENCY}{deliveryFee.toFixed(2)}</span>
+                </div>
+                <Separator className="my-2" />
+                <div className="flex justify-between font-bold text-lg pt-2 mt-1">
+                  <span>Total</span>
+                  <span className="text-orange-600">{CURRENCY}{cartTotal.toFixed(2)}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Delivery Fee</span>
-                <span>{CURRENCY}{deliveryFee.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-bold text-lg pt-2.5 border-t border-gray-200 mt-1">
-                <span>Total</span>
-                <span className="text-orange-600">{CURRENCY}{cartTotal.toFixed(2)}</span>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-      
-      <div className="p-6 border-t border-gray-100 bg-gray-50">
-        <div className="flex justify-between">
-          <Link 
-            to="/menu"
-            className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+            </>
+          )}
+        </CardContent>
+        
+        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between">
+          <Button 
+            variant="outline"
+            className="h-12 px-6 rounded-xl font-medium"
+            asChild
           >
-            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Menu
-          </Link>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            <Link to="/menu">
+              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Menu
+            </Link>
+          </Button>
+
+          <Button 
             onClick={nextStep}
             disabled={cartItems.length === 0}
-            className={`inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all ${
+            className={`h-12 px-6 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all ${
               cartItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
@@ -323,14 +336,14 @@ const Checkout = () => {
             <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
-          </motion.button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </motion.div>
   );
 
   // Step 2: Delivery Details Form
-  const DeliveryDetails = () => {
+  const renderDeliveryDetails = () => {
     const handleSubmit = (e) => {
       e.preventDefault();
       nextStep();
@@ -341,139 +354,98 @@ const Checkout = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="bg-white rounded-2xl shadow-lg overflow-hidden"
       >
-        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-          <h2 className="text-2xl font-bold">Delivery Details</h2>
-          <p className="text-orange-100 mt-1">Tell us where to deliver your order</p>
-        </div>
+        <Card className="shadow-lg overflow-hidden border-0">
+          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+            <h2 className="text-2xl font-bold">Delivery Details</h2>
+            <p className="text-orange-100 mt-1">Tell us where to deliver your order</p>
+          </div>
 
-        <div className="p-6">
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            {/* Name Field */}
-            <div>
-              <label htmlFor="form-name" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>                <input
-                  type="text"
-                  id="form-name"
-                  name="name"
-                  value={deliveryDetails.name}
-                  onChange={(e) => handleDeliveryChange('name', e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 text-gray-700 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm"
-                  placeholder="Enter your full name"
-                  required
+          <CardContent className="p-6">
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="form-name">Full Name</Label>
+                  <Input
+                    id="form-name"
+                    name="name"
+                    value={deliveryDetails.name}
+                    onChange={(e) => handleDeliveryChange('name', e.target.value)}
+                    placeholder="Enter your full name"
+                    className="h-12"
+                    required
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="form-phone">Phone Number</Label>
+                  <Input
+                    type="tel"
+                    id="form-phone"
+                    name="phone"
+                    value={deliveryDetails.phone}
+                    onChange={(e) => handleDeliveryChange('phone', e.target.value)}
+                    placeholder="Your contact number"
+                    className="h-12"
+                    required
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="form-address">Delivery Address</Label>
+                  <Textarea
+                    id="form-address"
+                    name="address"
+                    rows="3"
+                    value={deliveryDetails.address}
+                    onChange={(e) => handleDeliveryChange('address', e.target.value)}
+                    placeholder="Enter your full address"
+                    className="resize-none"
+                    required
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="form-instructions">Delivery Instructions <span className="text-gray-400 font-normal">(Optional)</span></Label>
+                  <Textarea
+                    id="form-instructions"
+                    name="instructions"
+                    rows="2"
+                    value={deliveryDetails.instructions}
+                    onChange={(e) => handleDeliveryChange('instructions', e.target.value)}
+                    placeholder="Any special instructions for delivery"
+                    className="resize-none"
+                  />
+                </div>
+              </div>
+            
+              <div className="flex items-center space-x-2 mt-4 pt-2">
+                <input
+                  id="save-address"
+                  type="checkbox"
+                  className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300 rounded"
                 />
+                <Label htmlFor="save-address" className="font-normal cursor-pointer">
+                  Save this address for future orders
+                </Label>
               </div>
-            </div>
             
-            {/* Phone Field */}
-            <div>
-              <label htmlFor="form-phone" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Phone Number
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </div>                <input
-                  type="tel"
-                  id="form-phone"
-                  name="phone"
-                  value={deliveryDetails.phone}
-                  onChange={(e) => handleDeliveryChange('phone', e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 text-gray-700 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm"
-                  placeholder="Your contact number"
-                  required
-                />
-              </div>
-            </div>
-            
-            {/* Address Field */}
-            <div>
-              <label htmlFor="form-address" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Delivery Address
-              </label>
-              <div className="relative">
-                <div className="absolute top-3.5 left-4 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>                <textarea
-                  id="form-address"
-                  name="address"
-                  rows="3"
-                  value={deliveryDetails.address}
-                  onChange={(e) => handleDeliveryChange('address', e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 text-gray-700 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm resize-none"
-                  placeholder="Enter your full address"
-                  required
-                ></textarea>
-              </div>
-            </div>
-            
-            {/* Instructions Field */}
-            <div>
-              <label htmlFor="form-instructions" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Delivery Instructions <span className="text-gray-400">(Optional)</span>
-              </label>
-              <div className="relative">
-                <div className="absolute top-3.5 left-4 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                  </svg>
-                </div>                <textarea
-                  id="form-instructions"
-                  name="instructions"
-                  rows="2"
-                  value={deliveryDetails.instructions}
-                  onChange={(e) => handleDeliveryChange('instructions', e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 text-gray-700 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all shadow-sm resize-none"
-                  placeholder="Any special instructions for delivery"
-                ></textarea>
-              </div>
-            </div>
-          
-            {/* Save Address Option */}
-            <div className="flex items-center mt-2">
-              <input
-                id="save-address"
-                type="checkbox"
-                className="h-4 w-4 text-orange-500 focus:ring-orange-500 border-gray-300 rounded"
-              />
-              <label htmlFor="save-address" className="ml-2 text-sm text-gray-700">
-                Save this address for future orders
-              </label>
-            </div>
-          
-            <div className="pt-6 border-t border-gray-100 mt-5">
-              <div className="flex justify-between">
-                <motion.button 
+              <div className="pt-6 border-t border-gray-100 mt-6 md:flex md:justify-between items-center space-y-3 md:space-y-0">
+                <Button 
                   type="button"
+                  variant="outline"
                   onClick={prevStep}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                  className="h-12 px-6 rounded-xl w-full md:w-auto font-medium"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                   </svg>
                   Back
-                </motion.button>
-                <motion.button 
+                </Button>
+                <Button 
                   type="submit"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   disabled={!deliveryDetails.name || !deliveryDetails.phone || !deliveryDetails.address}
-                  className={`inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all ${
+                  className={`h-12 px-6 bg-gradient-to-r w-full md:w-auto from-orange-500 to-orange-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all ${
                     !deliveryDetails.name || !deliveryDetails.phone || !deliveryDetails.address 
                       ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
@@ -482,54 +454,40 @@ const Checkout = () => {
                   <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
-                </motion.button>
+                </Button>
               </div>
-            </div>
-          </form>
-        </div>
+            </form>
+          </CardContent>
+        </Card>
       </motion.div>
     );
   };
 
   // Step 3: Payment Options
-  const Payment = () => (
+  const renderPayment = () => (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="bg-white rounded-2xl shadow-lg overflow-hidden"
     >
-      <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-        <h2 className="text-2xl font-bold">Payment Method</h2>
-        <p className="text-orange-100 mt-1">Choose how you want to pay</p>
-      </div>
+      <Card className="shadow-lg overflow-hidden border-0">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+          <h2 className="text-2xl font-bold">Payment Method</h2>
+          <p className="text-orange-100 mt-1">Choose how you want to pay</p>
+        </div>
 
-      <div className="p-6">
-        <div className="space-y-4">
-          <motion.div 
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className={`border-2 rounded-xl p-5 cursor-pointer transition-all ${
+        <CardContent className="p-6">
+          <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
+            <div className={`flex items-center space-x-3 border-2 rounded-xl p-5 cursor-pointer transition-all ${
               paymentMethod === 'card' 
                 ? 'border-orange-500 bg-orange-50' 
                 : 'border-gray-200 hover:border-orange-300'
-            }`}
-            onClick={() => setPaymentMethod('card')}
-          >
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="card"
-                name="payment"
-                value="card"
-                checked={paymentMethod === 'card'}
-                onChange={() => setPaymentMethod('card')}
-                className="h-5 w-5 text-orange-500 focus:ring-orange-500"
-              />
-              <label htmlFor="card" className="ml-3 flex items-center justify-between cursor-pointer w-full">
+            }`}>
+              <RadioGroupItem value="card" id="card" className="text-orange-500 focus:ring-orange-500" />
+              <Label htmlFor="card" className="flex-1 flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="font-medium text-gray-800 block mb-1">Credit/Debit Card</span>
-                  <p className="text-sm text-gray-500">Pay securely with your card</p>
+                  <span className="font-medium text-gray-800 block text-base mb-0.5">Credit/Debit Card</span>
+                  <p className="text-sm text-gray-500 font-normal">Pay securely with your card</p>
                 </div>
                 <div className="flex space-x-2">
                   <div className="h-8 w-11 rounded shadow-sm overflow-hidden border border-gray-200">
@@ -547,34 +505,19 @@ const Checkout = () => {
                     </svg>
                   </div>
                 </div>
-              </label>
+              </Label>
             </div>
-          </motion.div>
-          
-          <motion.div 
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className={`border-2 rounded-xl p-5 cursor-pointer transition-all ${
+            
+            <div className={`flex items-center space-x-3 border-2 rounded-xl p-5 cursor-pointer transition-all ${
               paymentMethod === 'paypal' 
                 ? 'border-orange-500 bg-orange-50' 
                 : 'border-gray-200 hover:border-orange-300'
-            }`}
-            onClick={() => setPaymentMethod('paypal')}
-          >
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="paypal"
-                name="payment"
-                value="paypal"
-                checked={paymentMethod === 'paypal'}
-                onChange={() => setPaymentMethod('paypal')}
-                className="h-5 w-5 text-orange-500 focus:ring-orange-500"
-              />
-              <label htmlFor="paypal" className="ml-3 flex items-center justify-between cursor-pointer w-full">
+            }`}>
+              <RadioGroupItem value="paypal" id="paypal" className="text-orange-500 focus:ring-orange-500" />
+              <Label htmlFor="paypal" className="flex-1 flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="font-medium text-gray-800 block mb-1">PayPal</span>
-                  <p className="text-sm text-gray-500">Fast and secure payment with PayPal</p>
+                  <span className="font-medium text-gray-800 block text-base mb-0.5">PayPal</span>
+                  <p className="text-sm text-gray-500 font-normal">Fast and secure payment with PayPal</p>
                 </div>
                 <div className="h-8 w-11 rounded shadow-sm overflow-hidden border border-gray-200">
                   <svg viewBox="0 0 48 48" className="h-full w-full">
@@ -583,43 +526,28 @@ const Checkout = () => {
                     <path d="M25 20C25 22.2091 23.2091 24 21 24H20L19 28H16L18 18H21C23.2091 18 25 19.7909 25 20Z" fill="#FFFFFF" fillOpacity="0.5" />
                   </svg>
                 </div>
-              </label>
+              </Label>
             </div>
-          </motion.div>
-          
-          <motion.div 
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className={`border-2 rounded-xl p-5 cursor-pointer transition-all ${
+            
+            <div className={`flex items-center space-x-3 border-2 rounded-xl p-5 cursor-pointer transition-all ${
               paymentMethod === 'cod' 
                 ? 'border-orange-500 bg-orange-50' 
                 : 'border-gray-200 hover:border-orange-300'
-            }`}
-            onClick={() => setPaymentMethod('cod')}
-          >
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="cod"
-                name="payment"
-                value="cod"
-                checked={paymentMethod === 'cod'}
-                onChange={() => setPaymentMethod('cod')}
-                className="h-5 w-5 text-orange-500 focus:ring-orange-500"
-              />
-              <label htmlFor="cod" className="ml-3 flex items-center justify-between cursor-pointer w-full">
+            }`}>
+              <RadioGroupItem value="cod" id="cod" className="text-orange-500 focus:ring-orange-500" />
+              <Label htmlFor="cod" className="flex-1 flex items-center justify-between cursor-pointer">
                 <div>
-                  <span className="font-medium text-gray-800 block mb-1">Cash on Delivery</span>
-                  <p className="text-sm text-gray-500">Pay with cash when your order arrives</p>
+                  <span className="font-medium text-gray-800 block text-base mb-0.5">Cash on Delivery</span>
+                  <p className="text-sm text-gray-500 font-normal">Pay with cash when your order arrives</p>
                 </div>
-                <div className="h-9 w-9 rounded-full bg-green-100 flex items-center justify-center">
-                  <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="h-8 w-11 rounded flex items-center justify-center bg-gray-100 border border-gray-200">
+                  <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
-              </label>
+              </Label>
             </div>
-          </motion.div>
+          </RadioGroup>
           
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -642,7 +570,8 @@ const Checkout = () => {
                 <span>Delivery Fee</span>
                 <span>{CURRENCY}{deliveryFee.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between font-bold text-lg pt-2.5 border-t border-gray-200 mt-1">
+              <Separator className="my-2" />
+              <div className="flex justify-between font-bold text-lg pt-2 mt-1">
                 <span>Total</span>
                 <span className="text-orange-600">{CURRENCY}{cartTotal.toFixed(2)}</span>
               </div>
@@ -652,29 +581,25 @@ const Checkout = () => {
               By placing this order, you agree to our <a href="#" className="text-orange-600 hover:underline">Terms of Service</a> and <a href="#" className="text-orange-600 hover:underline">Privacy Policy</a>
             </p>
           </motion.div>
-        </div>
-      </div>
-      
-      <div className="p-6 border-t border-gray-100 bg-gray-50">
-        <div className="flex justify-between">
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+        </CardContent>
+        
+        <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-col-reverse md:flex-row md:justify-between gap-3 md:gap-0 mt-auto">
+          <Button 
+            variant="outline"
             onClick={prevStep}
-            className="inline-flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+            className="h-12 px-6 rounded-xl font-medium w-full md:w-auto"
             disabled={isSubmitting}
           >
             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Back
-          </motion.button>
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          </Button>
+
+          <Button 
             onClick={handlePlaceOrder}
             disabled={isSubmitting}
-            className={`inline-flex items-center px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all ${
+            className={`h-12 px-8 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all w-full md:w-auto ${
               isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
@@ -694,14 +619,14 @@ const Checkout = () => {
                 </svg>
               </>
             )}
-          </motion.button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </motion.div>
   );
 
   // Step indicators
-  const StepIndicator = () => (
+  const renderStepIndicator = () => (
     <div className="mb-10">
       <div className="flex items-center justify-center max-w-md mx-auto">
         {steps.map((step, index) => (
@@ -748,37 +673,25 @@ const Checkout = () => {
       </div>
     </div>
   );
-  // Render the active step content
-  const renderStepContent = () => {
-    switch (activeStep) {
-      case 0:
-        return <ReviewOrder />;
-      case 1:
-        return <DeliveryDetails />;
-      case 2:
-        return <Payment />;
-      default:
-        return <ReviewOrder />;
-    }
-  };
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-3xl pt-30">
       <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Checkout</h1>
-      <StepIndicator />
+      {renderStepIndicator()}
       
       {/* Step 0: Review Order */}
       <div style={{ display: activeStep === 0 ? 'block' : 'none' }}>
-        <ReviewOrder />
+        {renderReviewOrder()}
       </div>
       
       {/* Step 1: Delivery Details */}
       <div style={{ display: activeStep === 1 ? 'block' : 'none' }}>
-        <DeliveryDetails />
+        {renderDeliveryDetails()}
       </div>
       
       {/* Step 2: Payment */}
       <div style={{ display: activeStep === 2 ? 'block' : 'none' }}>
-        <Payment />
+        {renderPayment()}
       </div>
     </div>
   );

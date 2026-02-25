@@ -1,140 +1,52 @@
-import { toast } from 'react-toastify';
-import '../styles/toast.css';
+import { toast } from 'sonner';
 
-// Toast configuration with emojis for better user experience
+// Unified toast utility API — backed by Sonner
 export const showToast = {
-  success: (message) => {
-    return toast.success(message, {
-      icon: "🎉",
-      style: {
-        borderLeft: '5px solid #10b981',
-      }
-    });
-  },
-  
-  error: (message) => {
-    return toast.error(message, {
-      icon: "❌",
-      style: {
-        borderLeft: '5px solid #ef4444',
-      }
-    });
-  },
-  
-  warning: (message) => {
-    return toast.warning(message, {
-      icon: "⚠️",
-      style: {
-        borderLeft: '5px solid #f59e0b',
-      }
-    });
-  },
-  
-  info: (message) => {
-    return toast.info(message, {
-      icon: "ℹ️",
-      style: {
-        borderLeft: '5px solid #3b82f6',
-      }
-    });
-  },
-  
-  // Special toast types for better user engagement
+  success: (message) => toast.success(message),
+
+  error: (message) => toast.error(message),
+
+  warning: (message) => toast.warning(message),
+
+  info: (message) => toast.info(message),
+
+  // Cart-specific toasts
   cart: {
-    added: (itemName) => {
-      return toast.success(`${itemName} added to cart!`, {
-        icon: "🛒",
-        style: {
-          borderLeft: '5px solid #10b981',
-        }
-      });
-    },
-    
-    removed: (itemName) => {
-      return toast.info(`${itemName} removed from cart`, {
-        icon: "🗑️",
-        style: {
-          borderLeft: '5px solid #3b82f6',
-        }
-      });
-    }
+    added: (itemName) => toast.success(`${itemName} added to cart!`, {
+      icon: '🛒',
+    }),
+
+    removed: (itemName) => toast(`${itemName} removed from cart`, {
+      icon: '🗑️',
+    }),
   },
-  
+
+  // Auth-specific toasts
   auth: {
-    loginSuccess: () => {
-      return toast.success('Welcome back!', {
-        icon: "👋",
-        style: {
-          borderLeft: '5px solid #10b981',
-        }
-      });
-    },
-    
-    registerSuccess: () => {
-      return toast.success('Account created successfully!', {
-        icon: "✨",
-        style: {
-          borderLeft: '5px solid #10b981',
-        }
-      });
-    },
-    
-    logoutSuccess: () => {
-      return toast.info('You have been logged out', {
-        icon: "👋",
-        style: {
-          borderLeft: '5px solid #3b82f6',
-        }
-      });
-    },
-    
-    needLogin: () => {
-      return toast.info('Please sign in to continue', {
-        icon: "🔒",
-        style: {
-          borderLeft: '5px solid #3b82f6',
-        }
-      });
-    }
+    loginSuccess: () => toast.success('Welcome back!', { icon: '👋' }),
+
+    registerSuccess: () => toast.success('Account created successfully!', { icon: '✨' }),
+
+    logoutSuccess: () => toast('You have been logged out', { icon: '👋' }),
+
+    needLogin: () => toast.info('Please sign in to continue', { icon: '🔒' }),
   },
-  
+
+  // Order-specific toasts
   order: {
-    placed: () => {
-      return toast.success('Your order has been placed successfully!', {
-        icon: "🍔",
-        style: {
-          borderLeft: '5px solid #10b981',
-        }
-      });
-    },
-    
-    failed: (message = 'Order could not be placed') => {
-      return toast.error(message, {
-        icon: "😞",
-        style: {
-          borderLeft: '5px solid #ef4444',
-        }
-      });
+    placed: () => toast.success('Your order has been placed successfully!', { icon: '🍔' }),
+
+    failed: (message = 'Order could not be placed') => toast.error(message, { icon: '😞' }),
+  },
+
+  // Flexible custom toast
+  custom: (message, icon = '🔔', type = 'default') => {
+    switch (type) {
+      case 'success': return toast.success(message, { icon });
+      case 'error':   return toast.error(message, { icon });
+      case 'warning': return toast.warning(message, { icon });
+      case 'info':    return toast.info(message, { icon });
+      default:        return toast(message, { icon });
     }
   },
-  
-  // Customizable toast
-  custom: (message, icon = "🔔", type = "default") => {
-    const toastConfig = {
-      icon: icon,
-    };
-    
-    switch(type) {
-      case 'success':
-        return toast.success(message, toastConfig);
-      case 'error':
-        return toast.error(message, toastConfig);
-      case 'warning':
-        return toast.warning(message, toastConfig);
-      case 'info':
-        return toast.info(message, toastConfig);
-      default:
-        return toast(message, toastConfig);
-    }
-  }
 };

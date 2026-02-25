@@ -1,224 +1,163 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { assets } from '../../assets/assets';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 const HeroSection = () => {
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-white to-amber-50 pt-28 pb-20">
-      {/* Enhanced Background decoration elements */}
-      <div className="absolute top-40 left-10 w-72 h-72 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-blob"></div>
-      <div className="absolute top-20 right-64 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-25 animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-8 left-1/2 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-      <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-3000"></div>
+    <section className="relative overflow-hidden bg-white pt-16 pb-20 lg:pt-24 min-h-[90vh] flex items-center">
+      {/* Abstract Background Elements (Tailwind Native, No Custom CSS) */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[600px] h-[600px] rounded-full bg-orange-50 blur-[100px] opacity-70 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-[500px] h-[500px] rounded-full bg-rose-50 blur-[100px] opacity-70 pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Text Content - Enhanced */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          
+          {/* Main Text Content (Left Side - 7 cols) */}
           <motion.div 
-            className="space-y-8"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="lg:col-span-7 space-y-8"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="space-y-4">
-              <motion.span 
-                className="inline-block px-4 py-1.5 bg-gradient-to-r from-orange-100 to-amber-100 text-orange-600 rounded-full text-sm font-bold tracking-wide shadow-sm"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
               >
-                #1 Food Delivery App
-              </motion.span>
-              <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 leading-tight">
-                <span className="block">Your Favorite Food</span>
-                <span className="block text-gradient bg-gradient-to-r from-orange-600 to-rose-500">Delivered Fresh & Fast</span>
+                <Badge variant="secondary" className="px-4 py-1.5 bg-orange-100 text-orange-700 hover:bg-orange-200 border-none font-semibold text-sm rounded-full tracking-wide">
+                  🚀 #1 Fastest Delivery App
+                </Badge>
+              </motion.div>
+              
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 leading-[1.1]">
+                Your Favorite Food
+                <span className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-orange-600 via-rose-500 to-pink-500 drop-shadow-sm">
+                  Delivered Fresh
+                </span>
               </h1>
+              
+              <p className="text-lg sm:text-xl text-gray-600 max-w-xl leading-relaxed font-medium">
+                Experience the finest cuisine delivered right to your doorstep. 
+                Choose from thousands of restaurants with zero-hassle ordering.
+              </p>
             </div>
-            <p className="text-xl text-gray-600 max-w-2xl leading-relaxed">
-              Experience the finest cuisine delivered right to your doorstep. 
-              Choose from our wide selection of restaurants and cuisines with no-hassle ordering.
-            </p>
             
-            {/* Fixed button alignment */}
-            <div className="flex items-center flex-wrap gap-5 pt-2">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                <Link 
-                  to="/menu" 
-                  className="px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-orange-500 to-rose-500 rounded-full hover:shadow-lg hover:shadow-orange-200 transition-all inline-block"
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+              <Link to="/menu" className="w-full sm:w-auto">
+                <Button 
+                  size="lg"
+                  className="w-full sm:w-auto px-8 h-14 text-base font-bold text-white bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-500/30 rounded-full transition-all hover:-translate-y-1"
                 >
                   Order Now
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                <Link 
-                  to="/restaurants" 
-                  className="px-8 py-4 text-lg font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-full hover:border-orange-300 hover:shadow-lg hover:shadow-orange-100 transition-all flex items-center"
+                </Button>
+              </Link>
+              <Link to="/restaurants" className="w-full sm:w-auto">
+                <Button 
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto px-8 h-14 text-base font-bold text-gray-700 border-2 border-gray-200 hover:border-orange-200 hover:bg-orange-50 rounded-full transition-all group"
                 >
-                  <span>View Restaurants</span>
-                  <svg className="w-5 h-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                  View Menu
+                  <svg className="w-5 h-5 ml-2 text-gray-400 group-hover:text-orange-500 transition-colors" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
-                </Link>
-              </motion.div>
+                </Button>
+              </Link>
             </div>
             
-            {/* Enhanced customer section */}
+            {/* Customer Proof Mini-Bento */}
             <motion.div 
-              className="flex items-center space-x-4 pt-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-4 pt-8 border-t border-gray-100"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.5 }}
             >
-              <div className="flex -space-x-4">
-                <div className="w-12 h-12 rounded-full border-2 border-white bg-orange-200 flex items-center justify-center text-orange-600 font-semibold overflow-hidden shadow-md">
-                  <img src={assets.food_1} alt="User" className="w-full h-full object-cover" />
-                </div>
-                <div className="w-12 h-12 rounded-full border-2 border-white bg-orange-200 flex items-center justify-center text-orange-600 font-semibold overflow-hidden shadow-md">
-                  <img src={assets.food_2} alt="User" className="w-full h-full object-cover" />
-                </div>
-                <div className="w-12 h-12 rounded-full border-2 border-white bg-orange-200 flex items-center justify-center text-orange-600 font-semibold overflow-hidden shadow-md">
-                  <img src={assets.food_3} alt="User" className="w-full h-full object-cover" />
-                </div>
+              <div className="flex -space-x-3">
+                {[assets.food_1, assets.food_2, assets.food_3].map((img, i) => (
+                  <div key={i} className="w-12 h-12 rounded-full border-[3px] border-white bg-orange-100 overflow-hidden shadow-sm">
+                    <img src={img} alt="Customer" className="w-full h-full object-cover" />
+                  </div>
+                ))}
               </div>
-              <div className="text-sm">
-                <span className="font-bold text-gray-900">8,200+ happy customers</span>
-                <div className="flex text-yellow-500">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
+              <div className="flex flex-col">
+                <div className="flex text-yellow-500 gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
                 </div>
+                <span className="text-sm font-bold text-gray-800 mt-0.5">8,200+ Happy Customers</span>
               </div>
             </motion.div>
           </motion.div>
           
-          {/* Image Content - Enhanced with better visibility for decorations */}
+          {/* Visual Content (Right Side - 5 cols Bento Grid) */}
           <motion.div 
-            className="relative z-20"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+            className="lg:col-span-5 relative mt-10 lg:mt-0"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Decorative elements behind image - Enhanced */}
-            <div className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-yellow-300 opacity-40 blur-sm"></div>
-            <div className="absolute -bottom-16 right-20 w-40 h-40 rounded-full bg-orange-500 opacity-40 blur-md"></div>
-            
-            {/* Food cards decorations - Enhanced visibility */}
-            <motion.div
-              className="absolute -top-12 -right-8 bg-white p-4 rounded-xl shadow-xl z-10"
-              initial={{ x: 20, y: 20, opacity: 0 }}
-              animate={{ x: 0, y: 0, opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.7 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                  <svg className="w-7 h-7 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-500">Delivery Time</div>
-                  <div className="font-semibold text-gray-900">25-30 min</div>
-                </div>
-              </div>
-            </motion.div>
-            
-            <motion.div
-              className="absolute -bottom-8 -left-10 bg-white p-4 rounded-xl shadow-xl z-10"
-              initial={{ x: -20, y: 20, opacity: 0 }}
-              animate={{ x: 0, y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.7 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                  <svg className="w-7 h-7 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-500">Order Success</div>
-                  <div className="font-semibold text-gray-900">Confirmed!</div>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* Main image with enhanced styling */}
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
-              <motion.img 
+            {/* Main Image Block */}
+            <div className="relative aspect-[4/5] sm:aspect-square lg:aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-orange-900/10 border-8 border-white group">
+              <img 
                 src={assets.header_img} 
-                alt="Featured Food"
-                className="w-full h-full object-cover"
-                initial={{ scale: 1.2 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 1.5 }}
-                whileHover={{ scale: 1.05 }}
+                alt="Delicious featured meal"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              {/* Enhanced gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent pointer-events-none" />
+              
+              {/* Overlay Text */}
+              <div className="absolute bottom-8 left-8 right-8">
+                <span className="bg-white/90 backdrop-blur-md text-orange-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
+                  Featured
+                </span>
+                <h3 className="text-white font-bold text-2xl drop-shadow-md">Spicy Noodles Bowl</h3>
+              </div>
             </div>
+
+            {/* Floating Bento Cards */}
+            <motion.div
+              className="absolute -left-6 sm:-left-12 top-10 sm:top-20 bg-white/90 backdrop-blur-xl p-4 sm:p-5 rounded-2xl shadow-xl border border-white/50 z-20 flex items-center gap-3 sm:gap-4 pointer-events-none"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                <span className="text-xl sm:text-2xl">⚡</span>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wide">Delivery</div>
+                <div className="font-extrabold text-gray-900 text-sm sm:text-base">Under 30 Min</div>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              className="absolute -right-6 sm:-right-8 bottom-24 sm:bottom-32 bg-white/90 backdrop-blur-xl p-4 sm:p-5 rounded-2xl shadow-xl border border-white/50 z-20 flex items-center gap-3 sm:gap-4 pointer-events-none"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+            >
+              <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                <span className="text-xl sm:text-2xl">🔥</span>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wide">Hot & Fresh</div>
+                <div className="font-extrabold text-gray-900 text-sm sm:text-base">100% Quality</div>
+              </div>
+            </motion.div>
+
           </motion.div>
         </div>
       </div>
-      
-      {/* Enhanced animated elements at the bottom */}
-      <div className="absolute bottom-0 left-0 w-full">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="text-white/80 fill-current">
-          <path d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,229.3C960,213,1056,171,1152,149.3C1248,128,1344,128,1392,128L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        </svg>
-      </div>
-      
-      {/* CSS for animations and effects */}
-      <style jsx>{`
-        .text-gradient {
-          background-clip: text;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        
-        @keyframes blob {
-          0% {
-            transform: translate(0px, 0px) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
-        }
-        
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        
-        .animation-delay-3000 {
-          animation-delay: 3s;
-        }
-        
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
-    </div>
+    </section>
   );
 };
 

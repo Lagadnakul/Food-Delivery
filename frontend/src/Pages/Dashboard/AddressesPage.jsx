@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
-import { API_URL } from '../../config';
+import api from '../../services/api';
 import { showToast } from '../../utils/toastUtils';
 import { MapPin, Plus, Home, Briefcase, MoreHorizontal, Edit, Trash2, Check } from 'lucide-react';
+
 
 const AddressesPage = () => {
   const [addresses, setAddresses] = useState([]);
@@ -27,11 +28,7 @@ const AddressesPage = () => {
   const fetchAddresses = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/user/profile`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
+      const response = await api.get('/user/profile');
       if (response.data.success) {
         setAddresses(response.data.user.addresses || []);
       }
@@ -46,21 +43,11 @@ const AddressesPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
       let response;
-      
       if (editingAddress) {
-        response = await axios.put(
-          `${API_URL}/user/addresses/${editingAddress._id}`, 
-          formData,
-          { headers: { 'Authorization': `Bearer ${token}` } }
-        );
+        response = await api.put(`/user/addresses/${editingAddress._id}`, formData);
       } else {
-        response = await axios.post(
-          `${API_URL}/user/addresses`, 
-          formData,
-          { headers: { 'Authorization': `Bearer ${token}` } }
-        );
+        response = await api.post('/user/addresses', formData);
       }
       
       if (response.data.success) {
@@ -80,12 +67,7 @@ const AddressesPage = () => {
 
   const handleDelete = async (addressId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.delete(
-        `${API_URL}/user/addresses/${addressId}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      
+      const response = await api.delete(`/user/addresses/${addressId}`);
       if (response.data.success) {
         showToast.success('Address deleted successfully');
         setAddresses(response.data.addresses);
@@ -99,13 +81,7 @@ const AddressesPage = () => {
 
   const handleSetDefault = async (addressId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `${API_URL}/user/addresses/${addressId}/default`,
-        {},
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      
+      const response = await api.put(`/user/addresses/${addressId}/default`, {});
       if (response.data.success) {
         showToast.success('Default address updated');
         setAddresses(response.data.addresses);

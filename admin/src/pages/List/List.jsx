@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
-import { ToastContainer, toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import { url } from '../../assets/assets'
+import { toast } from 'react-toastify'
+import { listFood, removeFood } from '../../services/foodService'
 
 const List = () => {
   const [list, setList] = useState([])
@@ -20,16 +18,15 @@ const List = () => {
   const fetchList = async () => {
     setLoading(true)
     try {
-      const response = await axios.get(`${url}/food/list`)
-      if (response.data.success) {
-        setList(response.data.data)
-        toast.success("Menu items loaded successfully")
+      const result = await listFood()
+      if (result.success) {
+        setList(result.data)
       } else {
-        toast.error("Failed to fetch food items")
+        toast.error('Failed to fetch food items')
       }
     } catch (error) {
-      console.error("Error fetching list:", error)
-      toast.error("Error loading food items. Please check if your server is running.")
+      console.error('Error fetching list:', error)
+      toast.error(error.message || 'Error loading food items. Is the server running?')
     } finally {
       setLoading(false)
     }
@@ -38,51 +35,47 @@ const List = () => {
   const handleDelete = async (id) => {
     setDeleting(id)
     try {
-      const response = await axios.post(`${url}/food/remove`, { id })
-      if (response.data.success) {
+      const result = await removeFood(id)
+      if (result.success) {
         setList(prev => prev.filter(item => item._id !== id))
-        toast.success("Food item removed successfully")
+        toast.success('Food item removed successfully')
       } else {
-        toast.error("Failed to remove item")
+        toast.error('Failed to remove item')
       }
     } catch (error) {
-      console.error("Error removing item:", error)
-      toast.error("Error removing food item")
+      console.error('Error removing item:', error)
+      toast.error(error.message || 'Error removing food item')
     } finally {
       setDeleting(null)
       setConfirmDelete(null)
     }
   }
 
-  // Reset filters
   const resetFilters = () => {
     setSearchTerm('')
     setSelectedCategory('All')
   }
 
-  // Get unique categories for filter dropdown
   const categories = ['All', ...new Set(list.map(item => item.category).filter(Boolean))]
 
-  // Filter food items based on search and category
   const filteredList = list.filter(item => {
-    const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch =
+      item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory
     return matchesSearch && matchesCategory
   })
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <ToastContainer position="top-right" autoClose={3000} />
-      
       <div className="mb-8 bg-white p-6 rounded-xl shadow-sm">
         <div className="flex justify-between items-center flex-wrap gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Food Menu Items</h1>
             <p className="text-gray-600">Manage your restaurant's menu offerings</p>
           </div>
-          <Link 
-            to="/add" 
+          <Link
+            to="/add"
             className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium 
                       rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors shadow-md 
                       hover:shadow-lg flex items-center gap-2"
@@ -128,9 +121,7 @@ const List = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none transition-all"
               >
                 {categories.map((category, index) => (
-                  <option key={index} value={category}>
-                    {category}
-                  </option>
+                  <option key={index} value={category}>{category}</option>
                 ))}
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
@@ -156,10 +147,10 @@ const List = () => {
               onClick={fetchList}
               className="px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
             >
-              <svg className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              {loading ? "Loading..." : "Refresh"}
+              {loading ? 'Loading...' : 'Refresh'}
             </button>
           </div>
         </div>
@@ -168,10 +159,8 @@ const List = () => {
       {/* Results summary */}
       {!loading && (
         <div className="mb-4 text-gray-600">
-          Showing {filteredList.length} of {list.length} items 
-          {(searchTerm || selectedCategory !== 'All') && (
-            <span> (filtered)</span>
-          )}
+          Showing {filteredList.length} of {list.length} items
+          {(searchTerm || selectedCategory !== 'All') && <span> (filtered)</span>}
         </div>
       )}
 
@@ -187,13 +176,13 @@ const List = () => {
           </svg>
           <h3 className="mt-4 text-xl font-bold text-gray-700">No Food Items Found</h3>
           <p className="mt-2 text-gray-500">
-            {list.length === 0 
-              ? "Get started by adding menu items to your restaurant." 
-              : "Try adjusting your search or filter criteria."}
+            {list.length === 0
+              ? 'Get started by adding menu items to your restaurant.'
+              : 'Try adjusting your search or filter criteria.'}
           </p>
           {list.length === 0 ? (
-            <Link 
-              to="/add" 
+            <Link
+              to="/add"
               className="mt-6 inline-block px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors"
             >
               Add Your First Item
@@ -212,27 +201,21 @@ const List = () => {
           {filteredList.map((item) => (
             <div key={item._id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
               <div className="relative h-48">
+                {/* item.image is already a full ImageKit CDN URL stored in MongoDB */}
                 <img
-                  src={`http://localhost:4000/uploads/${item.image}`}
+                  src={item.image}
                   alt={item.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/300x200?text=Food+Image'
+                    e.target.src = 'https://placehold.co/300x200?text=No+Image'
                   }}
                 />
                 <div className="absolute top-0 right-0 p-2 flex gap-2">
-                  <Link 
-                    to={`/add?edit=${item._id}`}
-                    className="p-2 bg-white rounded-full shadow-md hover:bg-blue-100 transition-colors"
-                  >
-                    <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 0L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </Link>
                   <button
                     onClick={() => setConfirmDelete(item._id)}
                     disabled={deleting === item._id}
                     className="p-2 bg-white rounded-full shadow-md hover:bg-red-100 transition-colors"
+                    aria-label="Delete food item"
                   >
                     {deleting === item._id ? (
                       <div className="h-5 w-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
@@ -245,19 +228,19 @@ const List = () => {
                 </div>
                 <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent w-full py-2 px-4">
                   <span className="text-xs font-medium text-white px-2 py-1 bg-orange-500 rounded-full">
-                    {item.category || "Uncategorized"}
+                    {item.category || 'Uncategorized'}
                   </span>
                 </div>
               </div>
               <div className="p-5">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="text-lg font-semibold text-gray-800 truncate">{item.name}</h3>
-                  <span className="font-bold text-orange-500">${item.price.toFixed(2)}</span>
+                  <span className="font-bold text-orange-500">${Number(item.price).toFixed(2)}</span>
                 </div>
                 <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
               </div>
 
-              {/* Confirmation dialog */}
+              {/* Inline delete confirmation */}
               {confirmDelete === item._id && (
                 <div className="p-4 border-t border-gray-100 bg-gray-50">
                   <p className="text-sm text-gray-600 mb-3">Are you sure you want to delete this item?</p>

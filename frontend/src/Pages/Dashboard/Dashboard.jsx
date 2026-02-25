@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   User,
   ShoppingBag,
@@ -9,6 +8,8 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 
 const Dashboard = () => {
   const location = useLocation();

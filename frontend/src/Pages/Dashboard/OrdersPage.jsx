@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import axios from 'axios';
 import { API_URL, CURRENCY } from '../../config';
 import { showToast } from '../../utils/toastUtils';
 import { ShoppingBag, ChevronDown, ChevronRight, MapPin, Phone, Clock, Check, AlertTriangle } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);

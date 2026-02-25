@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// eslint-disable-next-line no-unused-vars
+import { AnimatePresence , motion } from 'framer-motion';
 import { showToast } from '../../utils/toastUtils';
 import axios from 'axios';
 import { API_URL } from '../../config';

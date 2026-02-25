@@ -1,11 +1,8 @@
 import React, { useState, useCallback } from "react";
-import axios from "axios";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
+import { addFood } from '../../services/foodService';
 
 const Add = () => {
-  // Use environment variable for API URL
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
   
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -44,35 +41,17 @@ const Add = () => {
       data.append("category", formData.category);
       data.append("price", formData.price);
 
-      // Set a longer timeout for the request
-      const response = await axios.post(`${API_URL}/food/add`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 15000 // 15 seconds
-      });
+      const result = await addFood(data);
 
-      if (response.data.success) {
-        toast.success("Food item added successfully!", {
-          icon: "🍔"
-        });
-        
-        // Reset form
+      if (result.success) {
+        toast.success("Food item added successfully! 🍔");
         resetForm();
       } else {
-        toast.error(response.data.message || "Failed to add food item");
+        toast.error(result.message || "Failed to add food item");
       }
     } catch (error) {
       console.error("Error adding food:", error);
-      
-      // More detailed error handling
-      if (error.code === "ERR_NETWORK") {
-        toast.error(`Network error: Check if your backend server is running at ${API_URL}`);
-      } else if (error.code === "ECONNABORTED") {
-        toast.error("Request timed out. Server may be slow to respond.");
-      } else if (error.response) {
-        toast.error(`Server error: ${error.response.data.message || error.response.statusText}`);
-      } else {
-        toast.error(`Error: ${error.message}`);
-      }
+      toast.error(error.message || "Failed to add food item. Is the server running?");
     } finally {
       setLoading(false);
     }
@@ -104,6 +83,16 @@ const Add = () => {
     }
   }, []);
 
+  const handleFileSelection = useCallback((file) => {
+    if (file.type.includes("image/")) {
+      setImage(file);
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
+    } else {
+      toast.error("Please upload a valid image file (JPG, PNG, etc.)");
+    }
+  }, []);
+
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -112,20 +101,7 @@ const Add = () => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelection(e.dataTransfer.files[0]);
     }
-  }, []);
-
-  const handleFileSelection = useCallback((file) => {
-    if (file.type.includes("image/")) {
-      setImage(file);
-      // Create URL for preview
-      const fileUrl = URL.createObjectURL(file);
-      setPreviewUrl(fileUrl);
-    } else {
-      toast.error("Please upload a valid image file (JPG, PNG, etc.)", {
-        icon: "❌"
-      });
-    }
-  }, []);
+  }, [handleFileSelection]);
 
   const handleImageSelection = useCallback((e) => {
     if (e.target.files && e.target.files[0]) {
@@ -135,13 +111,6 @@ const Add = () => {
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-gray-50 p-6 rounded-2xl">
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-      />
       
       {/* Page Header */}
       <div className="mb-8 text-center">

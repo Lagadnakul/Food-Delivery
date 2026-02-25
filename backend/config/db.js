@@ -3,7 +3,11 @@ import mongoose from 'mongoose';
 
 dotenv.config({ path: './.env.local' });
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://nakullagad084_db_user:Nakul12345@cluster0.yb6pf9c.mongodb.net/HungerHive?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+    console.warn("MONGODB_URI is not set in environment variables");
+}
 
 export const connectDB = async () => {
     try {

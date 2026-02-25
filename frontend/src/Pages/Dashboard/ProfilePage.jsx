@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from '../../config';
 import { showToast } from '../../utils/toastUtils';
 import { User, Mail, Phone } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null);

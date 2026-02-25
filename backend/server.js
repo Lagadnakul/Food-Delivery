@@ -6,14 +6,18 @@ import foodRoutes from './routes/foodRoute.js';
 import orderRoutes from './routes/orderRoute.js';
 import paymentRoutes from './routes/paymentRoute.js';
 import userRoutes from './routes/userRoute.js';
+import { requestLogger } from './middleware/logger.middleware.js';
+import { apiLimiter } from './middleware/rate-limit.middleware.js';
+import { errorHandler } from './middleware/error-handler.js';
 
 // Load environment variables early - try .env first, then .env.local
 dotenv.config();
 dotenv.config({ path: './.env.local' });
 
-// Fallback JWT_SECRET if not in env
+// Check for required JWT_SECRET
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = 'x7dH89skdjhs873hdjhs87dhs87dhs87dhs87dhs87dh';
+  console.error("FATAL ERROR: JWT_SECRET environment variable is not set.");
+  process.exit(1);
 }
 
 const app = express();
@@ -42,6 +46,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' })); // Add size limit
 app.use(express.urlencoded({ extended: true, limit: '50mb' })); // Add size limit
+app.use(requestLogger);
+app.use(apiLimiter);
 app.use('/uploads', express.static('uploads'));
 
 // Basic security headers
@@ -51,8 +57,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB connection string with fallback
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://nakullagad084_db_user:Nakul12345@cluster0.yb6pf9c.mongodb.net/HungerHive?retryWrites=true&w=majority';
+// MongoDB connection string
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error("FATAL ERROR: MONGODB_URI environment variable is not set.");
+  process.exit(1);
+}
 
 // Connect to MongoDB with better error handling
 mongoose.connect(MONGODB_URI)
@@ -320,14 +331,7 @@ app.get("/", (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    success: false, 
-    message: 'Something went wrong!', 
-    error: process.env.NODE_ENV === 'production' ? null : err.message
-  });
-});
+app.use(errorHandler);
 
 // Handle 404 routes
 app.use((req, res) => {

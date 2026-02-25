@@ -4,18 +4,3 @@ services:
     runtime: node
     buildCommand: npm install
     startCommand: node server.js
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: MONGODB_URI
-        value: mongodb+srv://nakullagad084_db_user:Nakul12345@cluster0.yb6pf9c.mongodb.net/HungerHive?retryWrites=true&w=majority
-      - key: JWT_SECRET
-        value: x7dH89skdjhs873hdjhs87dhs87dhs87dhs87dhs87dh
-      - key: IMAGEKIT_PUBLIC_KEY
-        value: public_Sk+so7yluyPCX79LAWnaa6zsIs4=
-      - key: IMAGEKIT_PRIVATE_KEY
-        value: private_RtVFvw93AZW4viuZN1YrkZyLhoE=
-      - key: IMAGEKIT_URL_ENDPOINT
-        value: https://ik.imagekit.io/bxi3adntf
-      - key: CORS_ORIGIN
-        value: https://hunger-hive-frontend.vercel.app

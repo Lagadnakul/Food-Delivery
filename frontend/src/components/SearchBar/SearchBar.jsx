@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { assets } from '../../assets/frontend_assets/assets';
 
 const SearchBar = () => {
   const navigate = useNavigate();

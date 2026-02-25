@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   cartData: { type: Array, default: {} },
   addresses: [addressSchema],
   phone: { type: String },
+  isAdmin: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 }, { minimize: false });

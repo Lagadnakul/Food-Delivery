@@ -1,8 +1,0 @@
-README.md
-admin/package-lock.json
-admin/package.json
-admin/src/App.jsx
-admin/src/components/Navbar/Navbar.jsx
-admin/src/components/Sidebar/Sidebar.jsx
-admin/src/index.css
-admin/src/pages/Orders/Orders.jsx

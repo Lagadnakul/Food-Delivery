@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+// eslint-disable-next-line no-unused-vars
+import { AnimatePresence,motion } from 'framer-motion';
 import { assets, restaurant_list, food_list } from '../assets/assets';
 import { useCart } from '../contexts/CartContext';
 import { CURRENCY } from '../config';

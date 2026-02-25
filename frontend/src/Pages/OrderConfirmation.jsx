@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import OrderService from '../services/orderService';
 import { CURRENCY } from '../config';
 import { assets } from '../assets/assets';
 import confetti from 'canvas-confetti';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
+import { Separator } from '../components/ui/separator';
+// eslint-disable-next-line no-unused-vars
+import { motion,AnimatePresence } from 'framer-motion';
 
 const OrderConfirmation = () => {
   const { orderId } = useParams();
@@ -77,23 +81,17 @@ const OrderConfirmation = () => {
       <div className="min-h-[70vh] container mx-auto px-4 py-16 flex flex-col items-center justify-center">
         <div className="relative">
           <div className="w-20 h-20 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.5 }} 
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
+          <div 
             className="absolute inset-0 flex items-center justify-center"
           >
             <img src={assets.HH_logo_small || assets.HH_logo} alt="Logo" className="w-12 h-12" />
-          </motion.div>
+          </div>
         </div>
-        <motion.p 
-          initial={{ opacity: 0, y: 10 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.7 }}
+        <p 
           className="mt-6 text-gray-600 font-medium"
         >
           Loading your order details...
-        </motion.p>
+        </p>
       </div>
     );
   }
@@ -101,9 +99,7 @@ const OrderConfirmation = () => {
   if (error || !order) {
     return (
       <div className="min-h-[70vh] container mx-auto px-4 py-16 max-w-2xl flex items-center justify-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div 
           className="bg-white rounded-2xl p-8 shadow-lg w-full text-center"
         >
           <div className="w-24 h-24 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-6">
@@ -121,49 +117,37 @@ const OrderConfirmation = () => {
               Contact Support
             </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-3xl pt-30">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+      <div
         className="relative overflow-hidden"
       >
         {/* Success Header */}
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-t-2xl text-white px-8 py-10 text-center relative overflow-hidden">
-          <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.2 }}
+          <div 
             className="w-24 h-24 mx-auto bg-white rounded-full flex items-center justify-center mb-5 shadow-lg"
           >
             <svg className="w-14 h-14 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
-          </motion.div>
+          </div>
           
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+          <h1 
             className="text-3xl font-bold mb-2"
           >
             Order Confirmed!
-          </motion.h1>
+          </h1>
           
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+          <p 
             className="text-green-50 text-lg"
           >
             Thank you for your order
-          </motion.p>
+          </p>
           
           {/* Decorative elements */}
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
@@ -171,9 +155,9 @@ const OrderConfirmation = () => {
         </div>
         
         {/* Order Content */}
-        <div className="bg-white rounded-b-2xl shadow-lg overflow-hidden">
+        <Card className="rounded-t-none rounded-b-2xl border-0 shadow-lg overflow-hidden">
           {/* Order ID and Tracking */}
-          <div className="p-6 border-b border-gray-100">
+          <CardHeader className="p-6 pb-4">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="flex flex-col">
                 <div className="flex items-center">
@@ -221,10 +205,12 @@ const OrderConfirmation = () => {
                 )}
               </div>
             </div>
-          </div>
+          </CardHeader>
+          <Separator />
           
+          <CardContent className="p-0">
           {/* Delivery Details */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6">
             <div 
               className="flex justify-between items-center cursor-pointer mb-3" 
               onClick={() => setShowDeliveryDetails(!showDeliveryDetails)}
@@ -302,9 +288,10 @@ const OrderConfirmation = () => {
               )}
             </AnimatePresence>
           </div>
+          <Separator />
           
           {/* Order Items */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6">
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
               <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -347,9 +334,10 @@ const OrderConfirmation = () => {
               ))}
             </div>
           </div>
+          <Separator />
           
           {/* Order Summary */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6">
             <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
               <svg className="w-5 h-5 mr-2 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -378,9 +366,10 @@ const OrderConfirmation = () => {
               </div>
             </div>
           </div>
+          <Separator />
           
           {/* Actions */}
-          <div className="p-6">
+          <div className="p-6 bg-gray-50/50">
             <div className="flex flex-col sm:flex-row gap-3 justify-between">
               <Link 
                 to="/menu"
@@ -403,8 +392,9 @@ const OrderConfirmation = () => {
               </p>
             </div>
           </div>
-        </div>
-      </motion.div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

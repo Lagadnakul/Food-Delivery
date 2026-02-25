@@ -1,9 +1,9 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { food_list } from '../assets/assets';
 import { API_URL } from '../config';
-import { useCart } from './CartContext';
+
 
 // Define the constant locally if it's not exported from config.js
 const DEFAULT_FETCH_INTERVAL = 60000; // 60 seconds
@@ -79,16 +79,24 @@ export const MenuProvider = ({ children }) => {
     return !!(token && user);
   };
 
+  const value = useMemo(() => ({
+    foodItems, 
+    categories, 
+    loading, 
+    lastFetched,
+    isAuthenticated,
+    refreshMenu: () => fetchFoodItems(true)
+  }), [
+    foodItems, 
+    categories, 
+    loading, 
+    lastFetched,
+    fetchFoodItems
+  ]);
+
   // Provide the menu data and functions to children
   return (
-    <MenuContext.Provider value={{ 
-      foodItems, 
-      categories, 
-      loading, 
-      lastFetched,
-      isAuthenticated,
-      refreshMenu: () => fetchFoodItems(true)
-    }}>
+    <MenuContext.Provider value={value}>
       {children}
     </MenuContext.Provider>
   );

@@ -4,7 +4,7 @@
  * Manages user authentication state, login, logout, and registration
  */
 import axios from 'axios';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, useMemo } from 'react';
 import { API_URL, TOKEN_KEY, USER_KEY } from '../config';
 import { showToast } from '../utils/toastUtils';
 
@@ -214,7 +214,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, [token]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     token,
     loading,
@@ -225,7 +225,18 @@ export const AuthProvider = ({ children }) => {
     getProfile,
     updateProfile,
     getAuthHeaders
-  };
+  }), [
+    user,
+    token,
+    loading,
+    isAuthenticated,
+    login,
+    register,
+    logout,
+    getProfile,
+    updateProfile,
+    getAuthHeaders
+  ]);
 
   return (
     <AuthContext.Provider value={value}>
@@ -245,4 +256,4 @@ export const useAuth = () => {
   return context;
 };
 
-export default AuthContext;
+

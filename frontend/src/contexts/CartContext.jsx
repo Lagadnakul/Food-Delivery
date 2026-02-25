@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { CART_KEY, DELIVERY_FEE, TAX_RATE } from '../config';
 import { showToast } from '../utils/toastUtils';
 
@@ -64,7 +64,7 @@ export const CartProvider = ({ children }) => {
   };
 
   // Add to cart with auth check
-  const addToCart = (item) => {
+  const addToCart = useCallback((item) => {
     if (!isAuthenticated()) {
       showToast.auth.needLogin();
       setPendingItem(item);
@@ -107,10 +107,10 @@ export const CartProvider = ({ children }) => {
     setTimeout(() => {
       setIsCartOpen(true);
     }, 0);
-  };
+  }, []);
 
   // Function to handle successful login
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = useCallback(() => {
     // Close the login modal
     setIsLoginModalOpen(false);
 
@@ -121,10 +121,10 @@ export const CartProvider = ({ children }) => {
         setPendingItem(null);
       }, 500); // Small delay for better UX
     }
-  };
+  }, [pendingItem, addToCart]);
 
   // Remove item from cart
-  const removeFromCart = (itemId) => {
+  const removeFromCart = useCallback((itemId) => {
     if (!isAuthenticated()) {
       showToast.auth.needLogin();
       setIsLoginModalOpen(true);
@@ -145,10 +145,10 @@ export const CartProvider = ({ children }) => {
         !(item.cartId === itemId || item.id === itemId || item._id === itemId)
       );
     });
-  };
+  }, []);
 
   // Update item quantity with improved handler
-  const updateQuantity = (itemId, newQuantity) => {
+  const updateQuantity = useCallback((itemId, newQuantity) => {
     if (!isAuthenticated()) {
       showToast.auth.needLogin();
       setIsLoginModalOpen(true);
@@ -167,10 +167,10 @@ export const CartProvider = ({ children }) => {
           : item
       )
     );
-  };
+  }, [removeFromCart]);
 
   // Clear cart
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     if (!isAuthenticated()) {
       showToast.auth.needLogin();
       setIsLoginModalOpen(true);
@@ -180,10 +180,10 @@ export const CartProvider = ({ children }) => {
     setCartItems([]);
     showToast.info('Cart cleared');
     setIsCartOpen(false);
-  };
+  }, []);
 
   // Toggle cart visibility
-  const toggleCart = () => {
+  const toggleCart = useCallback(() => {
     if (!isAuthenticated() && !isCartOpen) {
       showToast.auth.needLogin();
       setIsLoginModalOpen(true);
@@ -191,27 +191,44 @@ export const CartProvider = ({ children }) => {
     }
 
     setIsCartOpen(prev => !prev);
-  };
+  }, [isCartOpen]);
+
+  const value = useMemo(() => ({
+    cartItems,
+    cartCount,
+    cartSubtotal,
+    cartTax,
+    deliveryFee,
+    cartTotal,
+    isCartOpen,
+    isLoginModalOpen,
+    setIsLoginModalOpen,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    toggleCart,
+    setIsCartOpen,
+    handleLoginSuccess
+  }), [
+    cartItems,
+    cartCount,
+    cartSubtotal,
+    cartTax,
+    deliveryFee,
+    cartTotal,
+    isCartOpen,
+    isLoginModalOpen,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    toggleCart,
+    handleLoginSuccess
+  ]);
 
   return (
-    <CartContext.Provider value={{
-      cartItems,
-      cartCount,
-      cartSubtotal,
-      cartTax,
-      deliveryFee,
-      cartTotal,
-      isCartOpen,
-      isLoginModalOpen,
-      setIsLoginModalOpen,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      toggleCart,
-      setIsCartOpen,
-      handleLoginSuccess
-    }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

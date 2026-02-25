@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
+import { UnauthorizedError } from '../utils/errors.js';
 
 export const authMiddleware = async (req, res, next) => {
   try {
@@ -7,10 +8,7 @@ export const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Authorization token required' 
-      });
+      throw new UnauthorizedError('Authorization token required');
     }
     
     const token = authHeader.split(' ')[1];
@@ -22,33 +20,25 @@ export const authMiddleware = async (req, res, next) => {
     req.user = await userModel.findById(id).select('-password');
     
     if (!req.user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
+      throw new UnauthorizedError('User not found');
     }
     
     next();
   } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      return next(error);
+    }
+    
     console.log('Auth middleware error:', error);
     
     if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid token' 
-      });
+      return next(new UnauthorizedError('Invalid token'));
     }
     
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Token expired' 
-      });
+      return next(new UnauthorizedError('Token expired'));
     }
     
-    res.status(401).json({ 
-      success: false, 
-      message: 'Unauthorized' 
-    });
+    next(new UnauthorizedError('Unauthorized'));
   }
 };

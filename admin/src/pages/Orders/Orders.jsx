@@ -1,8 +1,6 @@
-import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import { url } from '../../assets/assets'
+import { toast } from 'react-toastify'
+import { listOrders, updateOrderStatus } from '../../services/orderService'
 
 const Orders = () => {
   const [orders, setOrders] = useState([])
@@ -10,8 +8,8 @@ const Orders = () => {
   const [filter, setFilter] = useState('All')
   const [searchTerm, setSearchTerm] = useState('')
 
-  const statusOptions = ['Food Processing', 'Out for Delivery', 'Delivered']
-  const filterOptions = ['All', 'Food Processing', 'Out for Delivery', 'Delivered']
+  const statusOptions = ['Pending', 'Food Processing', 'Out for Delivery', 'Delivered']
+  const filterOptions = ['All', 'Pending', 'Food Processing', 'Out for Delivery', 'Delivered']
 
   useEffect(() => {
     fetchOrders()
@@ -20,35 +18,34 @@ const Orders = () => {
   const fetchOrders = async () => {
     setLoading(true)
     try {
-      const response = await axios.get(`${url}/api/order/list`)
-      if (response.data.success) {
-        setOrders(response.data.data.reverse())
+      const result = await listOrders()
+      if (result.success) {
+        setOrders([...result.data].reverse())
       } else {
         toast.error('Failed to fetch orders')
       }
     } catch (error) {
       console.error('Error fetching orders:', error)
-      toast.error('Error loading orders. Please check if your server is running.')
+      toast.error(error.message || 'Error loading orders. Is the server running?')
     } finally {
       setLoading(false)
     }
   }
 
-  const updateStatus = async (orderId, newStatus) => {
+  const handleStatusUpdate = async (orderId, newStatus) => {
     try {
-      const response = await axios.post(`${url}/api/order/status`, {
-        orderId,
-        status: newStatus
-      })
-      if (response.data.success) {
-        setOrders(prev => prev.map(order => 
-          order._id === orderId ? { ...order, status: newStatus } : order
-        ))
+      const result = await updateOrderStatus(orderId, newStatus)
+      if (result.success) {
+        setOrders(prev =>
+          prev.map(order =>
+            order._id === orderId ? { ...order, status: newStatus } : order
+          )
+        )
         toast.success('Order status updated!')
       }
     } catch (error) {
       console.error('Error updating status:', error)
-      toast.error('Failed to update order status')
+      toast.error(error.message || 'Failed to update order status')
     }
   }
 
@@ -57,7 +54,8 @@ const Orders = () => {
       case 'Delivered': return 'bg-green-100 text-green-700 border-green-200'
       case 'Out for Delivery': return 'bg-blue-100 text-blue-700 border-blue-200'
       case 'Food Processing': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-      default: return 'bg-gray-100 text-gray-700 border-gray-200'
+      case 'Pending': return 'bg-gray-100 text-gray-700 border-gray-200'
+      default: return 'bg-gray-100 text-gray-600 border-gray-200'
     }
   }
 
@@ -86,10 +84,11 @@ const Orders = () => {
 
   const filteredOrders = orders.filter(order => {
     const matchesFilter = filter === 'All' || order.status === filter
-    const matchesSearch = 
+    const matchesSearch = searchTerm === '' || (
       order.address?.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.address?.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.address?.phone?.includes(searchTerm)
+    )
     return matchesFilter && matchesSearch
   })
 
@@ -97,7 +96,8 @@ const Orders = () => {
     total: orders.length,
     processing: orders.filter(o => o.status === 'Food Processing').length,
     outForDelivery: orders.filter(o => o.status === 'Out for Delivery').length,
-    delivered: orders.filter(o => o.status === 'Delivered').length
+    delivered: orders.filter(o => o.status === 'Delivered').length,
+    pending: orders.filter(o => !o.status || o.status === 'Pending' || o.status === 'pending').length,
   }
 
   if (loading) {
@@ -113,15 +113,13 @@ const Orders = () => {
 
   return (
     <div className="space-y-6">
-      <ToastContainer position="top-right" autoClose={3000} />
-      
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Orders</h1>
           <p className="text-slate-500 mt-1">Manage and track all customer orders</p>
         </div>
-        <button 
+        <button
           onClick={fetchOrders}
           className="px-4 py-2.5 bg-orange-500 text-white rounded-xl font-medium hover:bg-orange-600 transition-colors flex items-center gap-2"
         >
@@ -133,10 +131,14 @@ const Orders = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
           <p className="text-sm text-slate-500">Total Orders</p>
           <p className="text-2xl font-bold text-slate-800">{stats.total}</p>
+        </div>
+        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+          <p className="text-sm text-gray-500">Pending</p>
+          <p className="text-2xl font-bold text-gray-700">{stats.pending}</p>
         </div>
         <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
           <p className="text-sm text-yellow-600">Processing</p>
@@ -191,9 +193,9 @@ const Orders = () => {
           </svg>
           <h3 className="text-xl font-semibold text-slate-700 mb-2">No orders found</h3>
           <p className="text-slate-500">
-            {orders.length === 0 
-              ? "You haven't received any orders yet." 
-              : "No orders match your search criteria."}
+            {orders.length === 0
+              ? "You haven't received any orders yet."
+              : 'No orders match your search criteria.'}
           </p>
         </div>
       ) : (
@@ -213,7 +215,6 @@ const Orders = () => {
 
                   {/* Order Details */}
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Items */}
                     <div>
                       <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Items</p>
                       <p className="text-sm text-slate-700 font-medium">
@@ -226,7 +227,6 @@ const Orders = () => {
                       </p>
                     </div>
 
-                    {/* Customer */}
                     <div>
                       <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Customer</p>
                       <p className="text-sm text-slate-700 font-medium">
@@ -235,7 +235,6 @@ const Orders = () => {
                       <p className="text-xs text-slate-500">{order.address?.phone}</p>
                     </div>
 
-                    {/* Address */}
                     <div>
                       <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Delivery Address</p>
                       <p className="text-sm text-slate-700">
@@ -243,7 +242,6 @@ const Orders = () => {
                       </p>
                     </div>
 
-                    {/* Amount */}
                     <div>
                       <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Amount</p>
                       <p className="text-lg font-bold text-slate-800">₹{order.amount}</p>
@@ -258,7 +256,7 @@ const Orders = () => {
                     </div>
                     <select
                       value={order.status}
-                      onChange={(e) => updateStatus(order._id, e.target.value)}
+                      onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
                       className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-orange-500 focus:outline-none cursor-pointer"
                     >
                       {statusOptions.map(status => (

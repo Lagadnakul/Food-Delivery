@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { assets } from '../../assets/assets';
 import LoginPopup from '../LoginPopup/LoginPopup';
-import { motion, AnimatePresence } from 'framer-motion';
+// eslint-disable-next-line no-unused-vars
+import { AnimatePresence, motion } from 'framer-motion';
+import { useCart } from '../../contexts/CartContext';
 
 const Header = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -10,6 +12,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { cartCount } = useCart();
   
   // Check for user on component mount
   useEffect(() => {
@@ -100,7 +103,10 @@ const Header = () => {
               </motion.div>
               
               {/* Mobile User Icon */}
-              <button className="md:hidden flex items-center justify-center w-9 h-9 bg-orange-100 rounded-full text-orange-600 font-semibold">
+              <button
+                className="md:hidden flex items-center justify-center w-9 h-9 bg-orange-100 rounded-full text-orange-600 font-semibold"
+                aria-label={`User: ${user.name}`}
+              >
                 {user.name.charAt(0).toUpperCase()}
               </button>
             </div>
@@ -121,12 +127,20 @@ const Header = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <Link to="/cart" className="flex items-center justify-center w-9 h-9 bg-orange-100 rounded-full text-orange-500 hover:bg-orange-500 hover:text-white transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <Link
+              to="/cart"
+              className="flex items-center justify-center w-9 h-9 bg-orange-100 rounded-full text-orange-500 hover:bg-orange-500 hover:text-white transition-colors"
+              aria-label={`Open cart, ${cartCount} item${cartCount !== 1 ? 's' : ''}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
             </Link>
-            <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full">3</span>
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full">
+                {cartCount}
+              </span>
+            )}
           </motion.div>
           
           {/* Mobile menu button */}

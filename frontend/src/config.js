@@ -1,5 +1,16 @@
 // API base URL for backend connections
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const getApiUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  // If we are in the browser, intelligently route to the correct hostname
+  if (typeof window !== 'undefined') {
+    // If running on a local network IP (e.g. phone or another computer) and not hitting a prod domain
+    if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('vercel.app') && !window.location.hostname.includes('render.com')) {
+      return `http://${window.location.hostname}:4000`;
+    }
+  }
+  return envUrl || 'http://localhost:4000';
+};
+export const API_URL = getApiUrl();
 
 // Currency and financial settings
 export const CURRENCY = '₹';
