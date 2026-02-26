@@ -11,11 +11,11 @@ import { showToast } from '../utils/toastUtils';
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user, loading } = useAuth();
+  const { user } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [selectedAddressId] = useState(null);
   const { 
     cartItems, 
     cartSubtotal,
@@ -748,19 +748,7 @@ const Checkout = () => {
       </div>
     </div>
   );
-  // Render the active step content
-  const renderStepContent = () => {
-    switch (activeStep) {
-      case 0:
-        return <ReviewOrder />;
-      case 1:
-        return <DeliveryDetails />;
-      case 2:
-        return <Payment />;
-      default:
-        return <ReviewOrder />;
-    }
-  };
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-3xl pt-30">
       <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Checkout</h1>

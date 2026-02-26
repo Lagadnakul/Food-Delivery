@@ -1,12 +1,10 @@
-import React, { useState, useCallback } from "react";
 import axios from "axios";
+import { useCallback, useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { API_URL } from '../../services/api';
 
 const Add = () => {
-  // Use environment variable for API URL
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-  
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -102,19 +100,7 @@ const Add = () => {
     } else if (e.type === "dragleave") {
       setDragActive(false);
     }
-  }, []);
-
-  const handleDrop = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelection(e.dataTransfer.files[0]);
-    }
-  }, []);
-
-  const handleFileSelection = useCallback((file) => {
+  }, []);  const handleFileSelection = useCallback((file) => {
     if (file.type.includes("image/")) {
       setImage(file);
       // Create URL for preview
@@ -126,6 +112,16 @@ const Add = () => {
       });
     }
   }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelection(e.dataTransfer.files[0]);
+    }
+  }, [handleFileSelection]);
 
   const handleImageSelection = useCallback((e) => {
     if (e.target.files && e.target.files[0]) {

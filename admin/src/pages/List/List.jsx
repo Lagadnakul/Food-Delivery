@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import axios from 'axios'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { url } from '../../assets/assets'
+import { API_URL } from '../../services/api'
 
 const List = () => {
   const [list, setList] = useState([])
@@ -20,7 +20,7 @@ const List = () => {
   const fetchList = async () => {
     setLoading(true)
     try {
-      const response = await axios.get(`${url}/food/list`)
+      const response = await axios.get(`${API_URL}/food/list`)
       if (response.data.success) {
         setList(response.data.data)
         toast.success("Menu items loaded successfully")
@@ -38,7 +38,7 @@ const List = () => {
   const handleDelete = async (id) => {
     setDeleting(id)
     try {
-      const response = await axios.post(`${url}/food/remove`, { id })
+      const response = await axios.post(`${API_URL}/food/remove`, { id })
       if (response.data.success) {
         setList(prev => prev.filter(item => item._id !== id))
         toast.success("Food item removed successfully")

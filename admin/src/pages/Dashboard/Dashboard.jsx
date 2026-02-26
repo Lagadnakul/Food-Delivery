@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { url } from '../../assets/assets'
+import { API_URL } from '../../services/api'
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -19,11 +19,11 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       // Fetch food items
-      const foodResponse = await axios.get(`${url}/food/list`)
+      const foodResponse = await axios.get(`${API_URL}/food/list`)
       const foodItems = foodResponse.data.success ? foodResponse.data.data : []
 
       // Fetch orders
-      const ordersResponse = await axios.get(`${url}/order/list`)
+      const ordersResponse = await axios.get(`${API_URL}/orders/list`)
       const orders = ordersResponse.data.success ? ordersResponse.data.data : []
 
       // Calculate stats

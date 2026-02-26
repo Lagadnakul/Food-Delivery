@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { url } from '../../assets/assets'
+import { API_URL } from '../../services/api'
 
 const Orders = () => {
   const [orders, setOrders] = useState([])
@@ -20,7 +20,7 @@ const Orders = () => {
   const fetchOrders = async () => {
     setLoading(true)
     try {
-      const response = await axios.get(`${url}/api/order/list`)
+      const response = await axios.get(`${API_URL}/orders/list`)
       if (response.data.success) {
         setOrders(response.data.data.reverse())
       } else {
@@ -36,7 +36,7 @@ const Orders = () => {
 
   const updateStatus = async (orderId, newStatus) => {
     try {
-      const response = await axios.post(`${url}/api/order/status`, {
+      const response = await axios.post(`${API_URL}/orders/status`, {
         orderId,
         status: newStatus
       })
