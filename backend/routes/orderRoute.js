@@ -1,5 +1,5 @@
 import express from 'express';
-import { createOrder, getUserOrderHistory, getOrderById } from '../controllers/orderController.js';
+import { createOrder, getOrderById, getUserOrderHistory } from '../controllers/orderController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { Order } from '../models/orderModel.js';
 
@@ -11,11 +11,8 @@ router.post('/', authMiddleware, createOrder);
 // Get user order history - protected route
 router.get('/history', authMiddleware, getUserOrderHistory);
 
-// Get order by ID - protected route
-router.get('/:id', authMiddleware, getOrderById);
-
-// Get all orders (for admin panel)
-router.get('/', async (req, res) => {
+// Get all orders (for admin panel) - /orders/list
+router.get('/list', async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json({
@@ -30,12 +27,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Update order status (for admin)
-router.patch('/:id/status', async (req, res) => {
+// Update order status (for admin) - POST /orders/status
+router.post('/status', async (req, res) => {
   try {
-    const { status } = req.body;
+    const { orderId, status } = req.body;
     const updatedOrder = await Order.findByIdAndUpdate(
-      req.params.id,
+      orderId,
       { status },
       { new: true }
     );
@@ -53,6 +50,24 @@ router.patch('/:id/status', async (req, res) => {
     res.status(400).json({ 
       success: false, 
       message: error.message 
+    });
+  }
+});
+
+// Get order by ID - protected route (must be after specific routes)
+router.get('/:id', authMiddleware, getOrderById);
+
+// Get all orders (for admin panel) - /orders/
+router.get('/', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      data: orders    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: error.message || "Failed to fetch orders"
     });
   }
 });
